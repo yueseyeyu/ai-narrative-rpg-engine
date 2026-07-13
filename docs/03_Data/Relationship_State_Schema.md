@@ -1,7 +1,7 @@
 # Relationship State Schema
 
-**Version:** v1.0 RC2  
-**Status:** Release Candidate  
+**Version:** v1.0 RC3  
+**Status:** RC  
 **Last Updated:** 2026-07-13
 
 **Depends On:** [Character State Schema v1.3](./Character_State_Schema.md)
@@ -88,7 +88,7 @@ flowchart TD
     REL --> DR[Derived Registry]
 
     RP --> RPI[Core Identity]
-    RP --> RPT[Relationship Type]
+    RP --> RPT[Origin Type]
     RP --> RPO[Origin]
 
     RS --> EMD[Emotional Domain]
@@ -131,15 +131,17 @@ Relationship Profile 是关系的**极简、稳定的身份**。它定义*这段
 | creation_tick | 关系创建时的 Simulation Tick | Immutable |
 | origin_world | 关系来源世界 | Immutable |
 
-### 5.2 Relationship Type（关系类型）
+### 5.2 Origin Type（起源类型）
 
 | Field | Description | Mutability |
 |-------|-------------|------------|
-| relationship_type | 关系类型分类（acquaintance, friend, rival, family, romantic, mentor, enemy, ally） | Rarely changes |
+| origin_type | 关系起源分类（family, mentor, business_partner, acquaintance, rival, ally, romantic_prospect, enemy_origin） | Immutable |
 | relationship_origin | 关系起源描述（如 "met at festival", "childhood friends"） | Immutable |
 | formal_designation | 正式称谓（如 "sworn brothers", "betrothed"） | Rarely changes |
 
-> **Note:** `relationship_type` is a high-level classification for quick filtering and UI display. The actual relationship nuance is always read from Relationship State domains.
+> **Note:** `origin_type` defines how this relationship *came to exist* — its structural origin. This is immutable identity, like `origin_world`. The *current* relationship classification (friend, lover, enemy, ex-lover, etc.) is **not** stored in Profile — it is **derived** from Relationship State domains. See §8.2 `relationship_classification`.
+>
+> **Rationale:** A relationship may start as `business_partner` (origin) and evolve into `close_friend` (classification). Storing the dynamic classification in Profile would violate the "Profile Is Identity" principle — Profile must remain stable. The origin never changes; the classification evolves continuously.
 
 ---
 
@@ -221,10 +223,12 @@ Records the historical trajectory of the relationship. Only stores IDs and summa
 | milestone_event_ids | shared | 里程碑事件 ID 列表（如 "first_meeting", "first_conflict", "reconciliation"） | Simulation Layer |
 | conflict_event_ids | shared | 冲突事件 ID 列表 | Simulation Layer |
 | positive_event_ids | shared | 正面事件 ID 列表 | Simulation Layer |
-| arc_summary | shared | 关系弧线摘要（自由文本，定期更新） | Simulation Layer |
+| arc_summary | shared | 关系弧线摘要（自由文本，定期更新，**建议上限 512 Tokens**） | Simulation Layer |
 | last_major_shift_tick | shared | 最近一次重大转变的 Tick | Simulation Layer |
 
 > **Rule:** Event IDs reference Memory System objects. Relationship State never stores event content — only references.
+>
+> **Bounded Summary:** `arc_summary` is a bounded text field — it must be **overwritten** (not appended) on each update, with a recommended maximum of **512 Tokens**. This prevents unbounded growth over long playthroughs. The Simulation Layer should generate a fresh summary from recent History events rather than accumulating text indefinitely.
 
 ### 6.7 Runtime Domain（运行时域）
 
@@ -236,7 +240,7 @@ Scene-scoped temporary state. Exists only during the current Scene execution. Di
 | scene_flags | shared | 当前 Scene 的临时关系标志（如 "forced_proximity", "mediated", "public_setting"） | Scene Engine |
 | current_tension | shared | 当前张力 (0.0 – 1.0) | Simulation Layer |
 | emotional_charge | A→B / B→A | 当前情感电荷 (−1.0 – 1.0) | Simulation Layer |
-| temporary_modifiers | shared | 当前 Scene 的临时状态修正器列表 | Simulation Layer |
+| temporary_modifier_ids | shared | 当前 Scene 的临时状态修正器 ID 列表（引用 Modifier System 对象，不嵌入） | Simulation Layer |
 | pending_shift | shared | 是否有待提交的状态变更 | Simulation Layer |
 
 > **Rule:** Runtime Domain data **must never** survive Scene transition unless explicitly promoted by Simulation Layer to a persistent domain. This mirrors the Session State / Persistent State separation in Runtime State Model Blueprint.
@@ -284,7 +288,8 @@ Derived Data is computed at runtime from State fields. It is **never serialized*
 | Derived Field | Domain | Derivation Rule | Serialized? |
 |---------------|--------|-----------------|-------------|
 | relationship_strength | All | Weighted aggregate of all domain states — UI convenience metric only | No |
-| relationship_tier | All | Tier classification from strength + type (e.g., "stranger", "acquaintance", "close_friend", "soulmate") | No |
+| relationship_tier | All | Tier classification from strength + origin_type (e.g., "stranger", "acquaintance", "close_friend", "soulmate") | No |
+| relationship_classification | All | Dynamic classification from State domains + origin_type (e.g., "stranger", "acquaintance", "friend", "close_friend", "lover", "ex-lover", "rival", "enemy") — replaces the former Profile-level `relationship_type` | No |
 | trust_asymmetry | Trust | `abs(a_to_b.trust - b_to_a.trust)` — measures trust gap | No |
 | interaction_frequency | Interaction | Computed from `total_interactions` and `last_interaction_tick` relative to current Tick | No |
 | positive_ratio | Interaction | `positive_event_ids.length / (positive_event_ids.length + conflict_event_ids.length)` | No |
@@ -310,7 +315,7 @@ Derived Data is computed at runtime from State fields. It is **never serialized*
 | Relationship State — Commitment | Simulation Layer | Narrative Director, Prompt Builder |
 | Relationship State — Interaction | Simulation Layer | Narrative Director, Prompt Builder |
 | Relationship State — History | Simulation Layer | Narrative Director, Prompt Builder, Memory System |
-| Relationship State — Runtime | Scene Engine (interaction_context, scene_flags) + Simulation Layer (tension, charge, modifiers, pending_shift) | Narrative Director, Prompt Builder |
+| Relationship State — Runtime | Scene Engine (interaction_context, scene_flags) + Simulation Layer (tension, charge, modifier_ids, pending_shift) | Narrative Director, Prompt Builder |
 | References | Simulation Layer (IDs managed by respective systems) | Narrative Director, Prompt Builder, Memory System |
 | Derived Registry | Computed (no owner — recomputed on load) | All modules (read-only) |
 
@@ -331,9 +336,9 @@ Derived Data is computed at runtime from State fields. It is **never serialized*
 
 ## 10. Relationship Lifecycle（关系生命周期）
 
-Every Relationship has a defined lifecycle from creation to archival.
+Every Relationship has a defined lifecycle from creation to destruction.
 
-每个 Relationship 都有从创建到归档的明确定义的生命周期。
+每个 Relationship 都有从创建到销毁的明确定义的生命周期。
 
 ```mermaid
 stateDiagram-v2
@@ -350,12 +355,16 @@ stateDiagram-v2
     Dormant --> Orphaned: Participant Deleted
     Active --> Orphaned: Participant Deleted
 
+    Archived --> Destroyed: Purge / Forget
+    Orphaned --> Destroyed: Purge / Forget
+
     note right of Created: One-sided awareness
     note right of Established: Both parties aware
     note right of Active: Frequent interaction
     note right of Dormant: Long-term silence
     note right of Archived: Relationship concluded
     note right of Orphaned: Participant missing — preserved for Replay/Save
+    note right of Destroyed: Permanently erased — irreversible
 ```
 
 ### Lifecycle States（生命周期状态）
@@ -368,6 +377,7 @@ stateDiagram-v2
 | Dormant | 长期静默，衰减中 | Yes | No (decay only) |
 | Archived | 关系已结束，历史保留 | Yes (read-only) | No |
 | Orphaned | 一方缺失（删除/离开），数据保留 | Yes (read-only) | No |
+| Destroyed | 关系数据已永久删除，不可恢复 | No | No |
 
 ### Lifecycle Transitions（生命周期转换）
 
@@ -382,6 +392,8 @@ stateDiagram-v2
 | Dormant → Archived | Abandoned (long-term dormancy threshold) | Simulation Layer |
 | Established → Dormant | Drift apart (gradual decay) | Simulation Layer |
 | Any Active/Dormant/Archived → Orphaned | Participant deleted or permanently removed | Character Manager |
+| Archived → Destroyed | Mod purge / forget everything | Simulation Layer |
+| Orphaned → Destroyed | Mod purge / cleanup policy | Simulation Layer |
 
 ### Lifecycle Rules（生命周期规则）
 
@@ -392,6 +404,7 @@ stateDiagram-v2
 | Archived is read-only | Archived 状态的关系不可修改。如需重新激活，需创建新 Relationship 或通过特殊事件恢复。 |
 | Re-engagement from Dormant | Dormant → Active 转换需要新的交互触发。 |
 | No deletion of Orphaned | Orphaned 关系不自动删除，由系统策略决定保留期限。 |
+| Destroyed is irreversible | Destroyed 状态表示关系数据已被永久删除，不可恢复。仅通过显式 Mod 指令或清理策略触发。 |
 
 ---
 
@@ -440,7 +453,7 @@ Relationship Data
 │   │   ├── participant_a_id
 │   │   ├── participant_b_id
 │   │   └── ...
-│   └── relationship_type
+    │   └── origin_type
 └── relationship_state
     ├── emotional_domain
     │   ├── a_to_b (affection, jealousy, emotional_momentum, warmth)
@@ -468,7 +481,7 @@ Relationship Data
     │   └── last_major_shift_tick
     ├── runtime_domain (Temporary — Not Serialized)
     │   ├── (Scene Engine: interaction_context, scene_flags)
-    │   └── (Simulation Layer: tension, charge, temporary_modifiers, pending_shift)
+    │   └── (Simulation Layer: tension, charge, temporary_modifier_ids, pending_shift)
     └── references_domain
         ├── shared_memory_ids
         ├── significant_event_ids
@@ -551,10 +564,15 @@ Once this Schema is locked, the following governance rules apply:
 |---------|------|-------------|
 | v1.0 RC1 | 2026-07-13 | Initial Schema: Profile/State separation; 6 state domains; Directed State Pattern; Derived Registry; Relationship Lifecycle; Serialization rules |
 | v1.0 RC2 | 2026-07-13 | Style unification with Character v1.3: moved Document Governance to end; removed Hardware Considerations (belongs to Blueprint); removed scene_id from Runtime Domain (SSOT); removed scene_ids from References (SSOT); renamed behavior_tendency_ref to behavior_projection (abstract naming); strengthened relationship_strength UI-only declaration; added Lifecycle Transition Owner column; annotated Derived in Serialization Tree; added Profile Modularization to Future Extensibility; added Referenced By section |
+| v1.0 RC3 | 2026-07-13 | Architectural refinements: split relationship_type into origin_type (Profile, immutable) + relationship_classification (Derived, dynamic); added arc_summary bounded summary (512 Tokens max); renamed temporary_modifiers to temporary_modifier_ids (Reference Everything); added Destroyed lifecycle state (irreversible deletion); added Status field to Document Governance |
 
 ---
 
 ## 18. Document Governance（文档治理）
+
+**Status:** RC (Release Candidate)
+
+**Status Values:** Draft → RC → Locked → Deprecated
 
 **Owner:** Relationship Architect
 
