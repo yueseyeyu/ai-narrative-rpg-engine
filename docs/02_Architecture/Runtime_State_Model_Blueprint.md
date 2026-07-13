@@ -375,6 +375,22 @@ Future schema documents (Character Schema, Relationship Schema, World Schema, et
 
 ---
 
+## 14. Runtime State Mutation（运行时状态变更规则）
+
+Ownership defines **who owns** a state domain. Mutation Rules define **who may modify** it. These are two separate concepts.
+
+| Rule | Description |
+|------|-------------|
+| Simulation Layer is the sole mutation authority | 只有 Simulation Layer 可以变更 Persistent State。Only Simulation Layer may mutate Persistent State. |
+| Relationship Engine requests through Simulation Layer | Relationship Engine 通过 Simulation Layer 请求变更，不直接修改。 |
+| Memory System mutates only Memory Domain | Memory System 只可变更 Memory 域（Active Memory References），不修改 Persistent State。 |
+| Narrative Director is read-only | Narrative Director 只读消费 Runtime State。 |
+| Prompt Builder is read-only | Prompt Builder 只读消费 Runtime State。 |
+| LLM Runtime is read-only | LLM Runtime 不直接访问 Runtime State。 |
+| No module may directly modify another module's owned domain | 任何模块不得直接修改其他模块拥有的状态域。 |
+
+---
+
 ## References
 
 **Depends On:**
