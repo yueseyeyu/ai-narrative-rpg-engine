@@ -1,26 +1,46 @@
 # Narrative Director Blueprint
 
-**Version:** v2.2  
+**Version:** v2.3  
 **Status:** Draft  
 **Last Updated:** 2026-07-13
 
 ---
 
-# 1. Purpose
+## 1. Purpose（文档目的）
 
 Define the responsibilities, boundaries, runtime behavior, and decision-making process of the Narrative Director.
 
+定义 Narrative Director 的职责、边界、运行时行为和决策流程。
+
+### Core Definition（核心定义）
+
 The Narrative Director is the **story orchestration layer** of the AI Narrative RPG Engine.
+
+Narrative Director 是 AI Narrative RPG Engine 的故事编排层。
 
 It transforms simulation results into coherent, emotionally engaging narrative experiences.
 
+它将模拟结果转化为连贯的、有情感感染力的叙事体验。
+
 It is **not** responsible for changing world state.
+
+它不负责改变世界状态。
+
+### Core Philosophy（核心理念）
+
+Narrative never changes reality.
+
+Simulation determines what happened.
+
+Narrative determines how the player experiences what happened.
+
+叙事不改变事实。模拟决定发生了什么，叙事决定玩家如何体验发生的事情。
 
 ---
 
-# 2. Responsibilities
+## 2. Responsibilities（职责）
 
-## Responsible For
+### Responsible For（负责）
 
 - Story Planning
 - Narrative Goal Selection
@@ -32,7 +52,7 @@ It is **not** responsible for changing world state.
 - Narrative Continuity
 - Experience Quality
 
-## Not Responsible For
+### Not Responsible For（不负责）
 
 - World Simulation
 - Relationship Calculation
@@ -44,80 +64,40 @@ It is **not** responsible for changing world state.
 
 ---
 
-# 3. Document Governance
+## 3. Document Governance（文档治理）
 
 **Owner:** Narrative Architect
 
 **Reviewers:**
+
 - Runtime Architect
 - Simulation Architect
 - Product Architect
 
-**Approval:**
-Architecture Review Required
+**Approval:** Architecture Review Required
 
-**Update Policy**
-
-Changes affecting narrative decision flow, planning logic, or module boundaries require ADR approval.
+**Update Policy:** Changes affecting narrative decision flow, planning logic, or module boundaries require ADR approval.
 
 ---
 
-# 4. Design Principles
+## 4. Design Principles（设计原则）
 
-## Story Follows State
-
-Narrative never changes reality.
-
-Simulation determines what happened.
-
-Narrative determines how the player experiences what happened.
-
----
-
-## Simulation Before Narrative
-
-Narrative Director always consumes Simulation Output.
-
-It never modifies Simulation Results.
+| Principle | Description |
+|-----------|-------------|
+| Story Follows State | 叙事永不改变现实。Narrative never changes reality. Simulation determines what happened; Narrative determines how the player experiences it. |
+| Simulation Before Narrative | Narrative Director 总是消费 Simulation Output，永不修改模拟结果。Narrative Director always consumes Simulation Output. It never modifies Simulation Results. |
+| Emotion Before Information | 叙事应优化情感体验，而非最大化信息传递。Narrative should optimize emotional experience rather than maximize information delivery. |
+| Relationship Driven | Relationship State 是叙事基调、节奏和场景选择的主要驱动。Relationship State is the primary driver of narrative tone, pacing, and scene selection. |
+| Player Agency Matters | 玩家选择通过 Simulation 影响未来叙事。Player choices influence future narrative through Simulation. Narrative never invalidates meaningful player decisions. |
+| One Story, Multiple Expressions | 同一 Simulation Result 可因不同因素而以不同方式表达。The same Simulation Result may be expressed differently depending on Character Personality, Relationship State, Narrative Goal, and Content Profile. |
 
 ---
 
-## Emotion Before Information
-
-Narrative should optimize emotional experience rather than maximize information delivery.
-
----
-
-## Relationship Driven
-
-Relationship State is the primary driver of narrative tone, pacing, and scene selection.
-
----
-
-## Player Agency Matters
-
-Player choices influence future narrative through Simulation.
-
-Narrative never invalidates meaningful player decisions.
-
----
-
-## One Story, Multiple Expressions
-
-The same Simulation Result may be expressed differently depending on:
-
-- Character Personality
-- Relationship State
-- Narrative Goal
-- Content Profile
-
----
-
-# 5. Boundary Definition
+## 5. Boundary Definition（边界定义）
 
 Narrative Director is a Planning Layer.
 
-It owns:
+### Owns（拥有）
 
 - Story Planning
 - Emotional Planning
@@ -125,7 +105,7 @@ It owns:
 - Narrative Goal
 - Event Ordering
 
-It does NOT own:
+### Does NOT Own（不拥有）
 
 - World Rules
 - State Transition
@@ -135,123 +115,106 @@ It does NOT own:
 
 ---
 
-# 6. Runtime Position
+## 6. Runtime Position（运行时定位）
 
-Player Action
-
-↓
-
-Scene Engine
-
-↓
-
-Simulation Layer
-
-↓
-
-Relationship Engine
-
-↓
-
-Narrative Director
-
-↓
-
-Prompt Builder
-
-↓
-
-LLM
-
-↓
-
-Renderer
+```mermaid
+flowchart TD
+    A[Player Action] --> B[Scene Engine]
+    B --> C[Simulation Layer]
+    C --> D[Relationship Engine]
+    D --> E[Narrative Director]
+    E --> F[Prompt Builder]
+    F --> G[LLM]
+    G --> H[Renderer]
+```
 
 Narrative Director sits between deterministic simulation and probabilistic generation.
 
+Narrative Director 位于确定性模拟和概率性生成之间。
+
 ---
 
-# 7. Runtime Inputs
+## 7. Runtime Inputs（运行时输入）
 
 The Director consumes the following data:
 
-- **Scene Context:** Current location, participants, environment.
-- **Character State:** Health, status, inventory of involved characters.
-- **Relationship State:** Affinity, trust, active conflicts.
-- **Behavior Tendency:** (From Relationship Engine) e.g., "Hostile", "Flirty".
-- **Player Intent:** Derived from the last player action (e.g., "Aggressive", "Inquisitive").
-- **Player Experience Profile:** User preferences (e.g., prefers slow-burn romance, high combat tension).
-- **Quest State:** Current active objectives, critical path flags.
-- **Simulation Events:** List of things that just happened (e.g., "Sword broke", "Entered combat").
-- **Timeline:** Current story epoch.
+| Input | Description |
+|-------|-------------|
+| Scene Context | 当前地点、参与者、环境 |
+| Character State | 参与角色的健康、状态、物品 |
+| Relationship State | 好感、信任、活跃冲突 |
+| Behavior Tendency | 来自 Relationship Engine 的行为倾向（如 "Hostile", "Flirty"） |
+| Player Intent | 从最近玩家行为推导的意图（如 "Aggressive", "Inquisitive"） |
+| Player Experience Profile | 用户偏好（如偏好慢节奏恋爱、高战斗紧张感） |
+| Quest State | 当前活跃目标、关键路径标志 |
+| Simulation Events | 刚刚发生的事件列表（如 "Sword broke", "Entered combat"） |
+| Timeline | 当前故事时代 |
 
 ---
 
-# 8. Narrative Goal
+## 8. Narrative Goal（叙事目标）
 
 Every Scene has exactly one Primary Narrative Goal.
 
-Examples:
+叙事目标只影响呈现方式，永远不改变 Simulation Result。
 
-- Build Trust
-- Increase Suspense
-- Reveal Character
-- Resolve Conflict
-- Create Romance
-- Deepen Relationship
-- Deliver Reward
-- Prepare Future Plot
-
-Narrative Goal affects presentation only.
-
-It never changes Simulation Result.
+| Goal | Description |
+|------|-------------|
+| Build Trust | 建立信任 |
+| Increase Suspense | 增加悬念 |
+| Reveal Character | 揭示角色 |
+| Resolve Conflict | 解决冲突 |
+| Create Romance | 创造浪漫 |
+| Deepen Relationship | 深化关系 |
+| Deliver Reward | 给予奖励 |
+| Prepare Future Plot | 铺垫未来剧情 |
 
 ---
 
-# 9. Narrative Planning
+## 9. Narrative Planning（叙事规划）
 
 Narrative Planning determines:
 
-- Which event appears first
-- Which emotions are emphasized
-- Which character receives focus
-- Which memories are recalled
-- Which dialogue style should be used
+| Decision | Description |
+|----------|-------------|
+| Event Ordering | 哪个事件先出现 |
+| Emotion Emphasis | 哪些情感被强调 |
+| Character Focus | 哪个角色获得焦点 |
+| Memory Recall | 哪些记忆被回忆 |
+| Dialogue Style | 使用什么对话风格 |
 
 It never invents events that Simulation rejected.
 
 ---
 
-# 10. Emotional Orchestration
+## 10. Emotional Orchestration（情感编排）
 
 Narrative Director controls emotional rhythm.
 
-Possible emotional curves include:
+| Curve | Description |
+|-------|-------------|
+| Calm → Warm | 平静 → 温暖 |
+| Warm → Romantic | 温暖 → 浪漫 |
+| Suspense → Relief | 悬念 → 释然 |
+| Conflict → Reconciliation | 冲突 → 和解 |
+| Mystery → Revelation | 谜团 → 揭示 |
+| Hope → Failure → Determination | 希望 → 失败 → 决心 |
 
-- Calm → Warm
-- Warm → Romantic
-- Suspense → Relief
-- Conflict → Reconciliation
-- Mystery → Revelation
-- Hope → Failure → Determination
-
-Emotion is pacing.
-
-Emotion is not state.
+Emotion is pacing. Emotion is not state.
 
 ---
 
-# 11. Event Selection
+## 11. Event Selection（事件选择）
 
 Simulation may produce multiple candidate events.
 
-Example:
-
-- Character notices player injury
-- Character remembers previous promise
-- Phone rings
-- Rain starts
-- Enemy approaches
+| Candidate Event | Description |
+|-----------------|-------------|
+| Character notices player injury | 角色注意到玩家受伤 |
+| Character remembers previous promise | 角色记起之前的承诺 |
+| Phone rings | 电话响起 |
+| Rain starts | 开始下雨 |
+| Enemy approaches | 敌人靠近 |
 
 Narrative Director chooses:
 
@@ -264,124 +227,77 @@ It cannot create invalid events.
 
 ---
 
-# 12. Relationship Influence
+## 12. Relationship Influence（关系影响）
 
-Relationship Engine provides structured Behavior Tendencies.
+Relationship Engine provides structured Behavior Tendency.
 
-Example:
+Behavior Tendency（行为倾向）— Relationship Engine 产出的结构化运行时输出，描述角色当前最可能采取的行为倾向，而不是最终行为。
 
-- willingness_to_help
-- openness
-- trust_level
-- emotional_distance
-- jealousy
-- dependency
+| Tendency | Description |
+|----------|-------------|
+| willingness_to_help | 帮助意愿 |
+| openness | 开放度 |
+| trust_level | 信任等级 |
+| emotional_distance | 情感距离 |
+| jealousy | 嫉妒 |
+| dependency | 依赖 |
 
 Narrative Director converts these tendencies into narrative decisions.
 
-Example:
+**High Trust → Friendly Tone → Longer Conversation → Private Scene**
 
-High Trust
-
-↓
-
-Friendly Tone
-
-↓
-
-Longer Conversation
-
-↓
-
-Private Scene
-
-Low Trust
-
-↓
-
-Short Answers
-
-↓
-
-More Distance
-
-↓
-
-Guarded Body Language
+**Low Trust → Short Answers → More Distance → Guarded Body Language**
 
 ---
 
-# 13. Content Profile Adaptation
+## 13. Content Profile Adaptation（内容模式适配）
 
 Different Content Profiles use the same Narrative Plan.
 
-General Profile
+| Profile | Expression Style |
+|---------|-----------------|
+| General | Adventure-oriented expression |
+| Romance | Relationship-oriented expression |
+| Mature | Adult emotional expression |
 
-↓
-
-Adventure-oriented expression
-
-Romance Profile
-
-↓
-
-Relationship-oriented expression
-
-Mature Profile
-
-↓
-
-Adult emotional expression
-
-Simulation State remains identical.
-
-Only presentation changes.
+Simulation State remains identical. Only presentation changes.
 
 ---
 
-# 14. CG Planning
+## 14. CG Planning（CG 规划）
 
 Narrative Director determines whether a Scene deserves a CG.
 
-Evaluation considers:
+### Evaluation Factors（评估因素）
 
-- Emotional Peak
-- Story Importance
-- Relationship Milestone
-- Visual Value
-- Gallery Progression
+| Factor | Description |
+|--------|-------------|
+| Emotional Peak | 情感峰值 |
+| Story Importance | 故事重要性 |
+| Relationship Milestone | 关系里程碑 |
+| Visual Value | 视觉价值 |
+| Gallery Progression | 图鉴进度 |
 
-It outputs:
+### Output（输出）
 
-CG Requested
-
-or
-
-No CG
+It outputs: **CG Requested** or **No CG**.
 
 Image generation is performed later.
 
 ---
 
-# 15. Failure Handling
+## 15. Failure Handling（失败处理）
 
-If:
+If Prompt Builder fails, LLM fails, or Image generation fails:
 
-- Prompt Builder fails
-- LLM fails
-- Image generation fails
-
-Narrative Director remains unchanged.
-
-Planning results can be reused.
-
-Planning must be deterministic.
-
-Generation may be retried.
+- Narrative Director remains unchanged.
+- Planning results can be reused.
+- Planning must be deterministic.
+- Generation may be retried.
 
 ---
 
-# 16. Runtime Guarantees
+## 16. Runtime Guarantees（运行时保证）
 
 Narrative Director guarantees:
 
@@ -394,7 +310,7 @@ Narrative Director guarantees:
 
 ---
 
-# 17. Hardware Considerations
+## 17. Hardware Considerations（硬件考量）
 
 Designed for CPU execution.
 
@@ -406,7 +322,7 @@ Image generation remains asynchronous.
 
 ---
 
-# 18. Future Extensibility
+## 18. Future Extensibility（未来扩展）
 
 Future extensions include:
 
@@ -419,9 +335,9 @@ Future extensions include:
 
 ---
 
-# References
+## References
 
-**Depends On**
+**Depends On:**
 
 - Overall Architecture
 - Runtime Architecture
@@ -430,7 +346,7 @@ Future extensions include:
 - Relationship Engine Blueprint
 - Glossary
 
-**Referenced By**
+**Referenced By:**
 
 - Prompt Builder Blueprint
 - Prompt Templates
@@ -440,10 +356,11 @@ Future extensions include:
 
 ---
 
-# Revision History
+## Revision History
 
 | Version | Date | Description |
 |----------|------------|----------------------------------------------|
+| v2.3 | 2026-07-13 | Documentation enhancement: bilingual headings, Mermaid flowcharts, tables, consistent terminology |
 | v2.2 | 2026-07-13 | Strengthened narrative planning boundaries and runtime workflow |
 | v2.1 | 2026-07-13 | Added Relationship Influence and Content Profile adaptation |
 | v2.0 | 2026-07-13 | Initial Engineering Blueprint |

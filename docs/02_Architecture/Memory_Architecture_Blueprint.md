@@ -1,43 +1,53 @@
 # Memory Architecture Blueprint
 
-**Version:** v1.3  
+**Version:** v1.4  
 **Status:** Draft  
 **Last Updated:** 2026-07-13
 
 ---
 
-# 1. Purpose
+## 1. Purpose（文档目的）
 
 Define the responsibilities, boundaries, runtime behavior, and architecture of the Memory System.
 
+定义 Memory System 的职责、边界、运行时行为和架构。
+
+### Core Definition（核心定义）
+
 The Memory System is the **Long-term Experience Persistence Layer** of the AI Narrative RPG Engine.
+
+Memory System 是 AI Narrative RPG Engine 的长期体验持久化层。
 
 It transforms completed Scenes into structured, evolving memories that influence future simulation, relationship evolution, and narrative generation.
 
-Memory is one of the core runtime domains of the Engine.
+它将已完成的 Scene 转化为结构化、持续演化的记忆，从而影响未来的模拟、关系演化和叙事生成。
 
-It provides persistent cognitive continuity across scenes, gameplay sessions, and long-term character development.
+Memory is one of the core runtime domains of the Engine. It provides persistent cognitive continuity across scenes, gameplay sessions, and long-term character development.
 
-## Core Philosophy
+### Core Philosophy（核心理念）
 
 Memory is **not conversation history**.
 
-Memory is structured experience with quality attributes that simulate human cognitive processes including:
+Memory is structured experience with quality attributes that simulate human cognitive processes.
 
-- Encoding
-- Retrieval
-- Reinforcement
-- Decay
-- Activation
-- Distortion
+| Process | Description |
+|---------|-------------|
+| Encoding | 编码 |
+| Retrieval | 检索 |
+| Reinforcement | 强化 |
+| Decay | 衰减 |
+| Activation | 激活 |
+| Distortion | 扭曲 |
 
 The Engine remembers experiences rather than conversations.
 
+引擎记住的是经历，而不是对话记录。
+
 ---
 
-# 2. Responsibilities
+## 2. Responsibilities（职责）
 
-## Responsible For
+### Responsible For（负责）
 
 - Memory Extraction
 - Memory Classification
@@ -51,17 +61,17 @@ The Engine remembers experiences rather than conversations.
 - Memory Ownership Management
 - Memory Visibility Control
 
-## Memory Ownership
+#### Memory Ownership（记忆归属）
 
 Every Memory belongs to one or more runtime entities.
 
-Possible owners include:
-
-- Character
-- NPC
-- Player
-- Organization
-- World
+| Owner | Description |
+|-------|-------------|
+| Character | 角色 |
+| NPC | NPC |
+| Player | 玩家 |
+| Organization | 组织 |
+| World | 世界 |
 
 Ownership determines:
 
@@ -69,18 +79,18 @@ Ownership determines:
 - who may update memory quality
 - who may reference the memory during Runtime
 
-## Memory Visibility
+#### Memory Visibility（记忆可见性）
 
-Memories may be:
-
-- Private
-- Shared
-- Public
-- World-level
+| Level | Description |
+|-------|-------------|
+| Private | 私有 |
+| Shared | 共享 |
+| Public | 公开 |
+| World-level | 世界级 |
 
 Visibility determines retrieval scope rather than storage location.
 
-## Not Responsible For
+### Not Responsible For（不负责）
 
 The Memory System does **NOT** perform:
 
@@ -96,25 +106,19 @@ Raw conversation history belongs to Persistence Layer rather than Memory System.
 
 ---
 
-# 3. Document Governance
+## 3. Document Governance（文档治理）
 
-**Owner**
+**Owner:** Memory Architect
 
-Memory Architect
-
-**Reviewers**
+**Reviewers:**
 
 - Runtime Architect
 - Simulation Architect
 - AI Runtime Architect
 
-**Approval**
+**Approval:** Architecture Review Required
 
-Architecture Review Required
-
-## Update Policy
-
-The following changes require ADR approval:
+**Update Policy:** The following changes require ADR approval:
 
 - Memory lifecycle changes
 - Retrieval mechanism changes
@@ -127,81 +131,25 @@ Implementation tuning does not require ADR.
 
 ---
 
-# 4. Design Principles
+## 4. Design Principles（设计原则）
 
-## Experience Before Conversation
-
-The Engine remembers experiences rather than dialogue transcripts.
-
----
-
-## Selective Persistence
-
-Not every Scene becomes a Memory.
-
-Only meaningful experiences above the persistence threshold are stored.
-
----
-
-## Structured Memory
-
-Memory is runtime data.
-
-It is not free-form text.
+| Principle | Description |
+|-----------|-------------|
+| Experience Before Conversation | 引擎记住经历，而非对话记录。The Engine remembers experiences rather than dialogue transcripts. |
+| Selective Persistence | 并非每个 Scene 都成为 Memory。Not every Scene becomes a Memory. Only meaningful experiences above the persistence threshold are stored. |
+| Structured Memory | Memory 是运行时数据，不是自由文本。Memory is runtime data, not free-form text. |
+| Retrieval Before Generation | 相关记忆必须在 Prompt Builder 构建之前检索。Relevant memories must be retrieved before Prompt Builder constructs prompts. |
+| Memory Evolves | 记忆随时间变化。Memory changes over time through reinforcement, decay, activation, consolidation, and distortion. |
+| Quality-aware Retrieval | 检索依赖记忆质量，而非仅依赖语义相似度。Retrieval depends on Memory Quality rather than semantic similarity alone. |
+| Rule-driven Importance | 重要性评估必须是确定性的。Importance evaluation must be deterministic. LLM never decides whether a memory should exist. |
+| Ownership First | 每个 Memory 都有明确的归属。Every Memory has an explicit Owner. |
+| Runtime Independence | Memory 独立于任何特定 LLM。Memory exists independently from any specific LLM. |
 
 ---
 
-## Retrieval Before Generation
+## 5. Boundary Definition（边界定义）
 
-Relevant memories must be retrieved before Prompt Builder constructs prompts.
-
----
-
-## Memory Evolves
-
-Memory changes over time through:
-
-- reinforcement
-- decay
-- activation
-- consolidation
-- distortion
-
----
-
-## Quality-aware Retrieval
-
-Retrieval depends on Memory Quality rather than semantic similarity alone.
-
----
-
-## Rule-driven Importance
-
-Importance evaluation must be deterministic.
-
-LLM never decides whether a memory should exist.
-
----
-
-## Ownership First
-
-Every Memory has an explicit Owner.
-
-Ownership determines accessibility and runtime authority.
-
----
-
-## Runtime Independence
-
-Memory exists independently from any specific LLM.
-
-Replacing models must not invalidate stored memories.
-
----
-
-# 5. Boundary Definition
-
-## Memory System OWNS
+### Owns（拥有）
 
 - Memory Objects
 - Memory Index
@@ -213,7 +161,7 @@ Replacing models must not invalidate stored memories.
 - Ownership Metadata
 - Visibility Metadata
 
-## Memory System DOES NOT OWN
+### Does NOT Own（不拥有）
 
 - Character State
 - Relationship State
@@ -223,67 +171,35 @@ Replacing models must not invalidate stored memories.
 - Simulation Rules
 - Raw Chat History
 
-The Memory System provides information.
-
-It never changes Runtime State directly.
+The Memory System provides information. It never changes Runtime State directly.
 
 ---
 
-# 6. Runtime Position
+## 6. Runtime Position（运行时定位）
 
 The Memory System operates in two independent runtime phases.
 
-## Write Pipeline
+### Write Pipeline（写入流水线）
 
-Scene Execution
+```mermaid
+flowchart TD
+    A[Scene Execution] --> B[Scene Complete]
+    B --> C[Memory Extraction]
+    C --> D[Importance Evaluation]
+    D --> E[Memory Classification]
+    E --> F[Async Persistence]
+```
 
-↓
+### Read Pipeline（读取流水线）
 
-Scene Complete
-
-↓
-
-Memory Extraction
-
-↓
-
-Importance Evaluation
-
-↓
-
-Memory Classification
-
-↓
-
-Async Persistence
-
----
-
-## Read Pipeline
-
-Scene Initialization
-
-↓
-
-Context Query
-
-↓
-
-Memory Activation
-
-↓
-
-Memory Retrieval
-
-↓
-
-Prompt Builder
-
-↓
-
-LLM
-
----
+```mermaid
+flowchart TD
+    A[Scene Initialization] --> B[Context Query]
+    B --> C[Memory Activation]
+    C --> D[Memory Retrieval]
+    D --> E[Prompt Builder]
+    E --> F[LLM]
+```
 
 Memory writing and memory retrieval are completely decoupled.
 
@@ -292,269 +208,142 @@ Memory persistence must never block Scene completion.
 Memory retrieval must complete before Prompt Builder begins prompt assembly.
 
 The Memory System serves as the cognitive bridge between past experiences and future behavior.
-# 7. Memory Lifecycle
+
+---
+
+## 7. Memory Lifecycle（记忆生命周期）
 
 Every Memory follows a strict lifecycle:
 
-1. **Experience**
-   - A Scene completes and produces structured runtime results.
-
-2. **Evaluation**
-   - The Importance Score is calculated using deterministic rules.
-
-3. **Extraction**
-   - Structured Memory Objects are generated from Scene Results.
-
-4. **Classification**
-   - Memories are categorized (Episodic, Relationship, World, Personal, etc.).
-
-5. **Persistence**
-   - Memory Objects are written asynchronously into long-term storage.
-
-6. **Activation**
-   - Runtime triggers dynamically increase or decrease recall probability.
-
-7. **Retrieval**
-   - Relevant memories are recalled during future Scene execution.
-
-8. **Consolidation**
-   - Similar memories may be merged into higher-level abstractions.
-
-9. **Decay**
-   - Memory Quality attributes gradually evolve over time.
-
-10. **Archive**
-    - Inactive memories move into cold storage or subconscious layers.
+| Step | Phase | Description |
+|------|-------|-------------|
+| 1 | Experience | A Scene completes and produces structured runtime results. |
+| 2 | Evaluation | The Importance Score is calculated using deterministic rules. |
+| 3 | Extraction | Structured Memory Objects are generated from Scene Results. |
+| 4 | Classification | Memories are categorized (Episodic, Relationship, World, Personal, etc.). |
+| 5 | Persistence | Memory Objects are written asynchronously into long-term storage. |
+| 6 | Activation | Runtime triggers dynamically increase or decrease recall probability. |
+| 7 | Retrieval | Relevant memories are recalled during future Scene execution. |
+| 8 | Consolidation | Similar memories may be merged into higher-level abstractions. |
+| 9 | Decay | Memory Quality attributes gradually evolve over time. |
+| 10 | Archive | Inactive memories move into cold storage or subconscious layers. |
 
 ---
 
-# 8. Memory Types
+## 8. Memory Types（记忆类型）
 
 The Memory System supports multiple memory domains.
 
-## Episodic Memory
-
-Specific experiences.
-
-Examples:
-
-- First Meeting
-- First Kiss
-- Battle at Dawn
-- Festival Night
+| Type | Description | Examples |
+|------|-------------|----------|
+| Episodic Memory | 具体经历 | First Meeting, First Kiss, Battle at Dawn, Festival Night |
+| Relationship Memory | 直接影响人际关系的事件 | Saved My Life, Betrayed Trust, Shared Secret, Confession |
+| World Memory | 游戏世界中的重要变化 | Kingdom Fell, War Began, City Destroyed, New Era Started |
+| Personal Memory | 角色特定经历 | Childhood Trauma, Learned Swordsmanship, Overcame Fear, Lost Family |
+| Shared Memory | 多角色同时拥有的记忆 | Vacation, Graduation, Wedding, Team Victory |
 
 ---
 
-## Relationship Memory
-
-Experiences that directly influence interpersonal relationships.
-
-Examples:
-
-- Saved My Life
-- Betrayed Trust
-- Shared Secret
-- Confession
-
----
-
-## World Memory
-
-Important changes in the game world.
-
-Examples:
-
-- Kingdom Fell
-- War Began
-- City Destroyed
-- New Era Started
-
----
-
-## Personal Memory
-
-Character-specific experiences.
-
-Examples:
-
-- Childhood Trauma
-- Learned Swordsmanship
-- Overcame Fear
-- Lost Family
-
----
-
-## Shared Memory
-
-Memories simultaneously owned by multiple characters.
-
-Examples:
-
-- Vacation
-- Graduation
-- Wedding
-- Team Victory
-
----
-
-# 9. Importance Evaluation
+## 9. Importance Evaluation（重要性评估）
 
 Not every Scene becomes a Memory.
 
 The Memory System evaluates every completed Scene using deterministic rules.
 
-Evaluation Factors include:
+### Evaluation Factors（评估因素）
 
-- Emotional Impact
-- Relationship Change
-- Narrative Importance
-- Character Growth
-- World Impact
-- Player Choice Significance
-- Future Narrative Potential
+| Factor | Description |
+|--------|-------------|
+| Emotional Impact | 情感影响 |
+| Relationship Change | 关系变化 |
+| Narrative Importance | 叙事重要性 |
+| Character Growth | 角色成长 |
+| World Impact | 世界影响 |
+| Player Choice Significance | 玩家选择重要性 |
+| Future Narrative Potential | 未来叙事潜力 |
 
 Only memories exceeding the persistence threshold become long-term memories.
 
-Importance Evaluation is entirely rule-driven.
-
-LLMs never decide what should be remembered.
+Importance Evaluation is entirely rule-driven. LLMs never decide what should be remembered.
 
 ---
 
-# 10. Memory Retrieval
+## 10. Memory Retrieval（记忆检索）
 
 Memory Retrieval is Context-Aware Recall.
 
 The system searches for memories using multiple runtime signals.
 
-## Retrieval Inputs
+### Retrieval Inputs（检索输入）
 
-- Current Scene Context
-- Character State
-- Relationship State
-- Narrative Goal
-- Emotional Context
-- Active Quest
-- Character Personality
-- Timeline Position
+| Input | Description |
+|-------|-------------|
+| Current Scene Context | 当前场景上下文 |
+| Character State | 角色状态 |
+| Relationship State | 关系状态 |
+| Narrative Goal | 叙事目标 |
+| Emotional Context | 情感上下文 |
+| Active Quest | 当前任务 |
+| Character Personality | 角色性格 |
+| Timeline Position | 时间线位置 |
 
 Retrieval produces an ordered candidate list instead of a single result.
 
-Ranking considers:
+### Ranking Factors（排序因素）
 
-- Semantic Relevance
-- Memory Quality
-- Runtime Context
-- Narrative Needs
-- Recency
+| Factor | Description |
+|--------|-------------|
+| Semantic Relevance | 语义相关性 |
+| Memory Quality | 记忆质量 |
+| Runtime State | 运行时状态 |
+| Narrative Needs | 叙事需求 |
+| Recency | 近期性 |
 
 The exact scoring algorithm is implementation-defined and intentionally left open for future optimization.
 
 ---
 
-# 10.5 Memory Quality Model (Key Feature)
+## 11. Memory Quality Model（记忆质量模型）— Key Feature
 
 Every Memory contains quality attributes that evolve over time.
 
 These attributes simulate human cognition rather than database storage.
 
-## Strength
+### Quality Attributes（质量属性）
 
-Represents how firmly the memory is encoded.
+| Attribute | Description |
+|-----------|-------------|
+| Strength | 记忆编码强度。Higher Strength makes memories resistant to forgetting. |
+| Accuracy | 记忆准确度。Represents how faithfully the stored memory reflects the original event. |
+| Emotional Weight | 情感权重。High Emotional Weight increases retrieval priority. |
+| Accessibility | 可访问性。Represents how easily a memory can be recalled. Naturally decreases over time. Repeated retrieval increases Accessibility. |
+| Recency | 近期性。Recent memories receive temporary retrieval priority. |
 
-Higher Strength makes memories resistant to forgetting.
+### Behavioral Effects（行为效应）
 
----
-
-## Accuracy
-
-Represents how faithfully the stored memory reflects the original event.
-
-Accuracy may decrease because of:
-
-- Time
-- Conflicting experiences
-- False beliefs
-- Dreams
-- Gaslighting
-- Narrative mechanics
-
-Characters may confidently remember something incorrectly.
-
----
-
-## Emotional Weight
-
-Represents emotional intensity.
-
-High Emotional Weight increases retrieval priority.
-
-Traumatic and joyful memories often remain emotionally strong.
-
----
-
-## Accessibility
-
-Represents how easily a memory can be recalled.
-
-Accessibility naturally decreases over time.
-
-Repeated retrieval increases Accessibility.
-
----
-
-## Recency
-
-Represents how recently the memory was created or recalled.
-
-Recent memories receive temporary retrieval priority.
-
----
-
-## Behavioral Effects
-
-### Forgetting
+#### Forgetting（遗忘）
 
 When Accessibility becomes extremely low, memories move into subconscious storage instead of immediate retrieval.
 
----
-
-### Flashbulb Memory
+#### Flashbulb Memory（闪光灯记忆）
 
 Highly emotional memories resist decay.
 
-Examples:
+Examples: Death, Trauma, Marriage, First Love.
 
-- Death
-- Trauma
-- Marriage
-- First Love
+#### Distortion（扭曲）
 
----
-
-### Distortion
-
-A memory may have:
-
-High Strength
-
-+
-
-Low Accuracy
-
-The character strongly believes something that is objectively incorrect.
+A memory may have High Strength but Low Accuracy — the character strongly believes something that is objectively incorrect.
 
 This enables future mechanics such as:
 
-- unreliable narration
-- lies
-- manipulation
-- memory alteration
-- dream sequences
+- Unreliable narration
+- Lies
+- Manipulation
+- Memory alteration
+- Dream sequences
 
----
-
-### Reinforcement
+#### Reinforcement（强化）
 
 Whenever a memory is recalled or reinforced by new experiences:
 
@@ -566,31 +355,29 @@ Memory quality continuously evolves throughout gameplay.
 
 ---
 
-# 11. Memory Consolidation
+## 12. Memory Consolidation（记忆巩固）
 
 To prevent unlimited memory growth, the system continuously consolidates memories.
 
 Consolidation simulates long-term human learning.
 
-Process:
+### Process（流程）
 
-1. Pattern Matching
-2. Similarity Detection
-3. Abstraction
-4. Memory Merge
-5. Quality Adjustment
+```mermaid
+flowchart LR
+    A[Pattern Matching] --> B[Similarity Detection]
+    B --> C[Abstraction]
+    C --> D[Memory Merge]
+    D --> E[Quality Adjustment]
+```
 
-Example:
+**Example:**
 
-Five individual memories:
-
-"He helped me."
+Five individual memories: "He helped me."
 
 ↓
 
-One abstract memory:
-
-"He is reliable."
+One abstract memory: "He is reliable."
 
 Detailed events become generalized knowledge.
 
@@ -598,103 +385,26 @@ Consolidation preserves meaning while reducing storage complexity.
 
 ---
 
-# 11.5 Memory Activation (Key Feature)
+## 13. Memory Activation（记忆激活）— Key Feature
 
 Memory Activation determines which memories become active during runtime reasoning.
 
 Unlike traditional retrieval systems, Activation simulates subconscious recall.
 
-Activation does not retrieve memories directly.
+Activation does not retrieve memories directly. Instead, it adjusts their probability of participating in runtime reasoning.
 
-Instead, it adjusts their probability of participating in runtime reasoning.
+### Activation Triggers（激活触发器）
 
-## Activation Triggers
+| Trigger | Description | Example |
+|---------|-------------|---------|
+| Current Scene | 场景中的物体、地点或氛围激活相关记忆 | Fireworks → First Date |
+| Emotional Context | 当前情绪偏向特定回忆 | Fear → Past Trauma |
+| Relationship State | 关系变化激活相关人际记忆 | High Trust → Shared Secret |
+| Narrative Goal | 叙事目标使某些记忆更相关 | Reconciliation → Previous Conflict |
+| Player Action | 玩家选择唤醒遗忘的经历 | Giving Flowers → Past Romance |
+| Environmental Trigger | 视觉、音频或环境线索提高激活概率 | Rain, Music, Smell, Childhood Home, Festival |
 
-### Current Scene
-
-Objects, locations or atmosphere may activate related memories.
-
-Example:
-
-Fireworks
-
-↓
-
-First Date
-
----
-
-### Emotional Context
-
-Current emotions bias recall.
-
-Example:
-
-Fear
-
-↓
-
-Past Trauma
-
----
-
-### Relationship State
-
-Relationship changes activate related interpersonal memories.
-
-Example:
-
-High Trust
-
-↓
-
-Shared Secret
-
----
-
-### Narrative Goal
-
-Certain memories become more relevant depending on story objectives.
-
-Example:
-
-Reconciliation
-
-↓
-
-Previous Conflict
-
----
-
-### Player Action
-
-Player choices may awaken forgotten experiences.
-
-Example:
-
-Giving Flowers
-
-↓
-
-Past Romance
-
----
-
-### Environmental Trigger
-
-Visual, audio or environmental cues increase activation probability.
-
-Examples:
-
-- Rain
-- Music
-- Smell
-- Childhood Home
-- Festival
-
----
-
-## Runtime Behavior
+### Runtime Behavior（运行时行为）
 
 Activation modifies retrieval priority.
 
@@ -705,187 +415,86 @@ It does not create new memories.
 It only determines which existing memories are most likely to influence current reasoning.
 
 This allows the Runtime to simulate natural, context-sensitive recall rather than deterministic database queries.
-# 12. Memory Influence
+
+---
+
+## 14. Memory Influence（记忆影响）
 
 Retrieved memories serve as structured inputs to other runtime systems.
 
-**Relationship Engine**
-- Updates Trust, Affection, Respect, and other relationship dimensions based on recalled experiences.
-- Enables long-term relationship evolution beyond immediate interactions.
+| Consumer | How Memory Is Used |
+|----------|-------------------|
+| Relationship Engine | Updates Trust, Affection, Respect, and other dimensions based on recalled experiences. |
+| Narrative Director | Uses recalled memories to influence pacing, emotional tone, callbacks, and scene selection. |
+| Prompt Builder | Injects only the highest-priority memories into prompt context. |
+| Simulation Layer | May reference historical memories when evaluating certain rules or event triggers. |
 
-**Narrative Director**
-- Uses recalled memories to influence pacing, emotional tone, callbacks, and scene selection.
-- Ensures narrative continuity across long play sessions.
-
-**Prompt Builder**
-- Injects only the highest-priority memories into prompt context.
-- Converts structured memories into concise prompt-ready representations.
-
-**Simulation Layer**
-- May reference historical memories when evaluating certain rules or event triggers.
-- Historical facts remain immutable.
-
-**Rule**
-
-Memory never changes historical facts.
-
-It only influences future reasoning, simulation, and presentation.
+**Rule:** Memory never changes historical facts. It only influences future reasoning, simulation, and presentation.
 
 ---
 
-# 13. Runtime Guarantees
+## 15. Runtime Guarantees（运行时保证）
 
 The Memory System guarantees:
 
-- **Immutability**
-  - Historical memory content cannot be modified after persistence.
-  - Only quality attributes and accessibility may evolve.
-
-- **Asynchronous Persistence**
-  - Memory writing must never block Scene completion.
-  - Persistence failures may be retried asynchronously.
-
-- **Deterministic Extraction**
-  - Identical Scene Results always produce identical Memory Objects.
-
-- **Deterministic Retrieval**
-  - Given the same runtime context and activation state,
-    retrieval order is reproducible.
-
-- **Isolation**
-  - Memory failures must not interrupt Runtime execution.
-
-- **Data Integrity**
-  - Corrupted memory records must not crash the engine.
-  - Invalid memories may be skipped or quarantined.
+| Guarantee | Description |
+|-----------|-------------|
+| Immutability | Historical memory content cannot be modified after persistence. Only quality attributes and accessibility may evolve. |
+| Asynchronous Persistence | Memory writing must never block Scene completion. Persistence failures may be retried asynchronously. |
+| Deterministic Extraction | Identical Scene Results always produce identical Memory Objects. |
+| Deterministic Retrieval | Given the same runtime context and activation state, retrieval order is reproducible. |
+| Isolation | Memory failures must not interrupt Runtime execution. |
+| Data Integrity | Corrupted memory records must not crash the engine. Invalid memories may be skipped or quarantined. |
 
 ---
 
-# 14. Architecture & Hardware
+## 16. Architecture & Hardware（架构与硬件）
 
-## Architecture
+### Architecture（架构）
 
 The Memory System is implementation-agnostic.
 
-Possible storage technologies include:
+| Technology | Purpose |
+|------------|---------|
+| Vector Index | Semantic retrieval |
+| Structured Storage | Memory metadata, quality attributes, runtime indexes |
+| Graph Index (Optional) | Relationship between memories, story event graph, character memory graph |
 
-- Vector Index
-  - Semantic retrieval
+Implementations may choose SQLite, DuckDB, PostgreSQL, Neo4j, or other equivalent technologies without changing this Blueprint.
 
-- Structured Storage
-  - Memory metadata
-  - Quality attributes
-  - Runtime indexes
+### Hardware Considerations（硬件考量）
 
-- Graph Index (Optional)
-  - Relationship between memories
-  - Story event graph
-  - Character memory graph
+**Target Hardware:** RTX 5060 8GB (Reference Platform)
 
-Implementations may choose:
+| Design Goal | Description |
+|-------------|-------------|
+| CPU-oriented indexing | CPU 导向的索引与检索 |
+| Low-latency activation | 低延迟激活 |
+| Background persistence | 后台持久化 |
+| Scalable memory storage | 可扩展存储 |
+| Minimal runtime overhead | 最小运行时开销 |
 
-- SQLite
-- DuckDB
-- PostgreSQL
-- Neo4j
-- Other equivalent technologies
-
-without changing this Blueprint.
+**Target Retrieval Latency:** Memory Activation + Retrieval < 200ms under normal gameplay conditions.
 
 ---
 
-## Hardware Considerations
-
-Target Hardware:
-
-RTX 5060 8GB (Reference Platform)
-
-Design Goals:
-
-- CPU-oriented indexing and retrieval
-- Low-latency activation
-- Background persistence
-- Scalable memory storage
-- Minimal runtime overhead
-
-Target Retrieval Latency:
-
-Memory Activation + Retrieval
-
-< 200 ms
-
-under normal gameplay conditions.
-
----
-
-# 15. Future Extensibility
+## 17. Future Extensibility（未来扩展）
 
 The architecture is designed for future expansion.
 
-Possible future modules include:
-
-## Semantic Memory
-
-Stores abstract knowledge instead of experiences.
-
-Example:
-
-"The capital of the kingdom is Aster."
+| Module | Description |
+|--------|-------------|
+| Semantic Memory | Stores abstract knowledge instead of experiences. Example: "The capital of the kingdom is Aster." |
+| Procedural Memory | Stores learned skills and habits. Example: "Knows how to play piano." |
+| False Memory | Supports narrative devices such as brainwashing, hallucination, dream sequences, memory implantation. |
+| Dream Processing | Allows memories to consolidate during sleep or downtime. May strengthen, weaken, merge, or distort memories without modifying historical facts. |
+| Memory Graph | Represents relationships between memories. Supports causal reasoning, emotional chains, thematic clustering, and long-term story analysis. |
 
 ---
 
-## Procedural Memory
+## References
 
-Stores learned skills and habits.
-
-Example:
-
-"Knows how to play piano."
-
----
-
-## False Memory
-
-Supports narrative devices such as:
-
-- Brainwashing
-- Hallucination
-- Dream sequences
-- Memory implantation
-
----
-
-## Dream Processing
-
-Allows memories to consolidate during sleep or downtime.
-
-Dream processing may:
-
-- strengthen memories
-- weaken memories
-- merge memories
-- distort memories
-
-without modifying historical facts.
-
----
-
-## Memory Graph
-
-Represents relationships between memories.
-
-Supports:
-
-- causal reasoning
-- emotional chains
-- thematic clustering
-- long-term story analysis
-
----
-
-# References
-
-## Depends On
+**Depends On:**
 
 - Overall Architecture
 - Runtime Architecture
@@ -894,9 +503,7 @@ Supports:
 - Relationship Engine Blueprint
 - Glossary
 
----
-
-## Referenced By
+**Referenced By:**
 
 - Prompt Builder Blueprint
 - Narrative Director Blueprint
@@ -906,10 +513,12 @@ Supports:
 
 ---
 
-# Revision History
+## Revision History
 
 | Version | Date | Description |
 |----------|------------|------------------------------------------------------------|
+| v1.4 | 2026-07-13 | Documentation enhancement: bilingual headings, Mermaid flowcharts, tables, consistent terminology |
+| v1.3 | 2026-07-13 | Added Memory Activation, refined Accuracy definition, clarified asynchronous persistence, storage-agnostic architecture, deterministic retrieval guarantees |
 | v1.2 | 2026-07-13 | Added Memory Activation, refined Accuracy definition, clarified asynchronous persistence, storage-agnostic architecture, deterministic retrieval guarantees |
 | v1.1 | 2026-07-13 | Added Memory Quality Model (Strength, Accessibility, Emotional Weight, etc.) |
 | v1.0 | 2026-07-13 | Initial Engineering Blueprint |

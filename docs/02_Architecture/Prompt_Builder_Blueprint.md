@@ -1,50 +1,48 @@
 # Prompt Builder Blueprint
 
-**Version:** v2.0
-**Status:** Draft
+**Version:** v2.1  
+**Status:** Draft  
 **Last Updated:** 2026-07-13
 
 ---
 
-# 1. Purpose
+## 1. Purpose（文档目的）
 
 Define the responsibilities, boundaries, runtime workflow, and interfaces of the Prompt Builder.
 
+定义 Prompt Builder 的职责、边界、运行时工作流和接口。
+
+### Core Definition（核心定义）
+
 The Prompt Builder is the **translation layer** between the deterministic AI Narrative RPG Engine and generative AI models.
+
+Prompt Builder 是确定性引擎与生成式 AI 模型之间的翻译层。
 
 It transforms structured Runtime data into model-ready Prompt Packages without introducing new business logic.
 
-**Core Definition**
+它将结构化运行时数据转化为模型就绪的 Prompt Package，不引入新的业务逻辑。
+
+### Core Philosophy（核心理念）
 
 Prompt Builder converts:
 
-Simulation State
+```mermaid
+flowchart LR
+    A[Simulation State] --> B[Narrative Plan]
+    B --> C[Prompt Package]
+    C --> D[Renderer]
+    D --> E[LLM / Image Model]
+```
 
-↓
+It never creates facts. It only describes facts.
 
-Narrative Plan
-
-↓
-
-Prompt Package
-
-↓
-
-Renderer
-
-↓
-
-LLM / Image Model
-
-It never creates facts.
-
-It only describes facts.
+它不创造事实，只描述事实。
 
 ---
 
-# 2. Responsibilities
+## 2. Responsibilities（职责）
 
-## Responsible For
+### Responsible For（负责）
 
 - Transform structured Runtime data into Prompt Packages
 - Assemble prompt blocks
@@ -57,7 +55,7 @@ It only describes facts.
 - Prompt Formatting
 - Prompt Sanitization
 
-## Not Responsible For
+### Not Responsible For（不负责）
 
 - World Simulation
 - Relationship Calculation
@@ -70,7 +68,7 @@ It only describes facts.
 
 ---
 
-# 3. Document Governance
+## 3. Document Governance（文档治理）
 
 **Owner:** AI Runtime Architect
 
@@ -80,30 +78,28 @@ It only describes facts.
 - Narrative Architect
 - AI Infrastructure Architect
 
-**Approval**
+**Approval:** Architecture Review Required
 
-Architecture Review Required
-
-**Update Policy**
-
-Changes affecting Prompt Package structure, Builder interfaces, or Runtime workflow require ADR approval.
+**Update Policy:** Changes affecting Prompt Package structure, Builder interfaces, or Runtime workflow require ADR approval.
 
 ---
 
-# 4. Design Principles
+## 4. Design Principles（设计原则）
 
-- Data Before Prompt
-- Prompt Is Read-only
-- Prompt Is Disposable
-- No Business Logic
-- Template Driven
-- Model Agnostic
-- Content Profile Driven
-- Deterministic Assembly
+| Principle | Description |
+|-----------|-------------|
+| Data Before Prompt | 数据优先于 Prompt。All long-term state must be stored as structured data. Prompt is only the rendering layer. |
+| Prompt Is Read-only | Prompt 是只读的。Prompt Builder never modifies Runtime State. |
+| Prompt Is Disposable | Prompt 是一次性的。Every Prompt Package is reconstructed from Runtime State. |
+| No Business Logic | 无业务逻辑。Prompt Builder introduces no new business logic. |
+| Template Driven | 模板驱动。Prompts are assembled from reusable templates. |
+| Model Agnostic | 模型无关。Prompt Packages are independent of specific models. |
+| Content Profile Driven | 内容模式驱动。Presentation differs by Content Profile. |
+| Deterministic Assembly | 确定性组装。Identical inputs produce identical Prompt Packages. |
 
 ---
 
-# 5. Prompt Philosophy
+## 5. Prompt Philosophy（Prompt 哲学）
 
 Prompt is temporary.
 
@@ -115,14 +111,13 @@ Prompt Builder never stores prompts.
 
 Every Prompt Package is reconstructed from Runtime State.
 
-The prompt is a temporary representation of the Engine,
-not the Engine itself.
+The prompt is a temporary representation of the Engine, not the Engine itself.
 
 ---
 
-# 6. Boundary Definition
+## 6. Boundary Definition（边界定义）
 
-Prompt Builder owns:
+### Owns（拥有）
 
 - Prompt Templates
 - Prompt Assembly
@@ -132,7 +127,7 @@ Prompt Builder owns:
 - Prompt Sanitization
 - Prompt Package Construction
 
-Prompt Builder does NOT own:
+### Does NOT Own（不拥有）
 
 - World State
 - Character Logic
@@ -146,140 +141,99 @@ Prompt Builder is a **pure transformation layer**.
 
 ---
 
-# 7. Runtime Position
+## 7. Runtime Position（运行时定位）
 
-Player Action
-
-↓
-
-Scene Engine
-
-↓
-
-Simulation Layer
-
-↓
-
-Relationship Engine
-
-↓
-
-Narrative Director
-
-↓
-
-Prompt Builder
-
-↓
-
-Renderer
-
-↓
-
-LLM / Image Model
+```mermaid
+flowchart TD
+    A[Player Action] --> B[Scene Engine]
+    B --> C[Simulation Layer]
+    C --> D[Relationship Engine]
+    D --> E[Narrative Director]
+    E --> F[Prompt Builder]
+    F --> G[Renderer]
+    G --> H[LLM / Image Model]
+```
 
 Prompt Builder is the final Engine component before model inference.
 
 ---
 
-# 8. Runtime Inputs
+## 8. Runtime Inputs（运行时输入）
 
 Prompt Builder receives:
 
-- Narrative Plan
-- Scene Context
-- Character State
-- Relationship State
-- Behavior Tendencies
-- Relevant Memory
-- World State
-- Active Quest
-- Timeline
-- Content Profile
-- Runtime Configuration
-- Token Budget
+| Input | Description |
+|-------|-------------|
+| Narrative Plan | 叙事计划 |
+| Scene Context | 场景上下文 |
+| Character State | 角色状态 |
+| Relationship State | 关系状态 |
+| Behavior Tendency | 行为倾向 |
+| Relevant Memory | 相关记忆 |
+| World State | 世界状态 |
+| Active Quest | 当前任务 |
+| Timeline | 时间线 |
+| Content Profile | 内容模式 |
+| Runtime Configuration | 运行时配置 |
+| Token Budget | Token 预算 |
 
 ---
 
-# 9. Prompt Assembly Pipeline
+## 9. Prompt Assembly Pipeline（Prompt 组装流水线）
 
-Prompt Builder assembles Prompt Packages through the following stages:
-
-Input Validation
-
-↓
-
-Input Sanitization
-
-↓
-
-Template Selection
-
-↓
-
-Block Rendering
-
-↓
-
-Context Compression
-
-↓
-
-Instruction Assembly
-
-↓
-
-Constraint Injection
-
-↓
-
-Prompt Package Construction
-
-↓
-
-Renderer
+```mermaid
+flowchart TD
+    A[Input Validation] --> B[Input Sanitization]
+    B --> C[Template Selection]
+    C --> D[Block Rendering]
+    D --> E[Context Compression]
+    E --> F[Instruction Assembly]
+    F --> G[Constraint Injection]
+    G --> H[Prompt Package Construction]
+    H --> I[Renderer]
+```
 
 Prompt Builder never communicates directly with language models.
 
 ---
 
-# 10. Prompt Package Model
+## 10. Prompt Package Model（Prompt Package 模型）
 
 Prompt Builder outputs a structured Prompt Package.
 
-Example structure:
-
-- System Prompt
-- Character Context
-- Relationship Context
-- Scene Context
-- Memory Context
-- Narrative Goal
-- Style Instructions
-- Constraints
-- Output Schema
-- Metadata
+| Field | Description |
+|-------|-------------|
+| System Prompt | 系统提示 |
+| Character Context | 角色上下文 |
+| Relationship Context | 关系上下文 |
+| Scene Context | 场景上下文 |
+| Memory Context | 记忆上下文 |
+| Narrative Goal | 叙事目标 |
+| Style Instructions | 风格指令 |
+| Constraints | 约束条件 |
+| Output Schema | 输出模式 |
+| Metadata | 元数据 |
 
 Renderer converts the Prompt Package into model-specific requests.
 
 ---
 
-# 11. Prompt Block System
+## 11. Prompt Block System（Prompt Block 系统）
 
 Prompt Packages are composed from reusable blocks.
 
-Core Blocks include:
-
-- System Block
-- World Block
-- Character Block
-- Relationship Block
-- Scene Block
-- Memory Block
-- Narrative Block
-- Style Block
-- Constraint Block
-- Output Block
+| Block | Description |
+|-------|-------------|
+| System Block | 系统块 |
+| World Block | 世界块 |
+| Character Block | 角色块 |
+| Relationship Block | 关系块 |
+| Scene Block | 场景块 |
+| Memory Block | 记忆块 |
+| Narrative Block | 叙事块 |
+| Style Block | 风格块 |
+| Constraint Block | 约束块 |
+| Output Block | 输出块 |
 
 Blocks remain independent and reusable.
 
@@ -287,98 +241,80 @@ Blocks may be enabled or disabled according to runtime requirements.
 
 ---
 
-# 12. Context Compression
+## 12. Context Compression（上下文压缩）
 
 Prompt Builder manages limited context windows.
 
-Priority:
+### Priority Order（优先级排序）
 
-1. Current Scene
-2. Narrative Goal
-3. Relationship State
-4. Active Quest
-5. Relevant Memory
-6. Character Summary
-7. World Summary
+| Priority | Content |
+|----------|---------|
+| 1 | Current Scene |
+| 2 | Narrative Goal |
+| 3 | Relationship State |
+| 4 | Active Quest |
+| 5 | Relevant Memory |
+| 6 | Character Summary |
+| 7 | World Summary |
 
-Compression strategies include:
+### Compression Strategies（压缩策略）
 
-- Summarization
-- Pruning
-- Prioritization
-- Structured Formatting
+| Strategy | Description |
+|----------|-------------|
+| Summarization | 摘要 |
+| Pruning | 修剪 |
+| Prioritization | 优先级排序 |
+| Structured Formatting | 结构化格式化 |
 
 Prompt Builder never removes mandatory Runtime information.
 
 ---
 
-# 13. Content Profiles
+## 13. Content Profiles（内容模式）
 
 Presentation differs by Content Profile.
 
-Examples:
+| Profile | Description |
+|---------|-------------|
+| General | 通用模式 |
+| Romance | 恋爱模式 |
+| Mature | 成人模式 |
 
-General
-
-Romance
-
-Mature
-
-All profiles share identical Runtime State.
-
-Only presentation changes.
-
-Business logic remains identical.
+All profiles share identical Runtime State. Only presentation changes. Business logic remains identical.
 
 ---
 
-# 14. Multi-Modal Prompt Pipeline
+## 14. Multi-Modal Prompt Pipeline（多模态 Prompt 流水线）
 
-Prompt Builder supports multiple prompt targets.
-
-Text Prompt Package
-
-↓
-
-Renderer
-
-↓
-
-LLM
-
-Image Prompt Package
-
-↓
-
-Renderer
-
-↓
-
-Image Model
+```mermaid
+flowchart TD
+    A[Text Prompt Package] --> B[Renderer]
+    B --> C[LLM]
+    D[Image Prompt Package] --> E[Renderer]
+    E --> F[Image Model]
+```
 
 Different output targets may use different templates while sharing identical Runtime State.
 
 ---
 
-# 15. Prompt Sanitization
+## 15. Prompt Sanitization（Prompt 净化）
 
 Prompt Builder validates all external text before prompt assembly.
 
-Responsibilities include:
+| Responsibility | Description |
+|----------------|-------------|
+| Escaping Reserved Tokens | 转义保留 Token |
+| Normalizing Formatting | 规范化格式 |
+| Isolating Player Input | 隔离玩家输入 |
+| Preventing Prompt Injection | 防止 Prompt 注入 |
+| Protecting System Instructions | 保护系统指令 |
 
-- Escaping reserved tokens
-- Normalizing formatting
-- Isolating Player Input
-- Preventing prompt injection into template sections
-- Protecting system instructions
-
-Sanitization protects Prompt integrity.
-
-It never changes Runtime State.
+Sanitization protects Prompt integrity. It never changes Runtime State.
 
 ---
 
-# 16. Runtime Guarantees
+## 16. Runtime Guarantees（运行时保证）
 
 Prompt Builder guarantees:
 
@@ -393,25 +329,23 @@ Prompt Builder guarantees:
 
 ---
 
-# 17. Hardware Considerations
+## 17. Hardware Considerations（硬件考量）
 
-Target Platform:
+**Target Platform:** RTX 5060 8GB
 
-RTX 5060 8GB
-
-Responsibilities:
-
-- Efficient Context Compression
-- Minimize unnecessary token usage
-- Support streaming generation
-- Support asynchronous image generation
-- Keep Builder latency negligible compared to model inference
+| Responsibility | Description |
+|----------------|-------------|
+| Efficient Context Compression | 高效上下文压缩 |
+| Minimize Unnecessary Token Usage | 最小化不必要的 Token 使用 |
+| Support Streaming Generation | 支持流式生成 |
+| Support Asynchronous Image Generation | 支持异步图像生成 |
+| Keep Builder Latency Negligible | 保持 Builder 延迟可忽略 |
 
 Prompt Builder is CPU-oriented and independent of GPU scheduling.
 
 ---
 
-# 18. Future Extensibility
+## 18. Future Extensibility（未来扩展）
 
 Future extensions include:
 
@@ -423,15 +357,13 @@ Future extensions include:
 - Multi-Agent Prompt Composition
 - Multi-Model Routing
 
-These features must not violate the core principle:
-
-Prompt Builder remains a pure transformation layer.
+These features must not violate the core principle: Prompt Builder remains a pure transformation layer.
 
 ---
 
-# References
+## References
 
-**Depends On**
+**Depends On:**
 
 - Overall Architecture
 - Runtime Architecture
@@ -439,7 +371,7 @@ Prompt Builder remains a pure transformation layer.
 - Relationship Engine Blueprint
 - Glossary
 
-**Referenced By**
+**Referenced By:**
 
 - Renderer Specification
 - Prompt Templates
@@ -449,9 +381,10 @@ Prompt Builder remains a pure transformation layer.
 
 ---
 
-# Revision History
+## Revision History
 
 | Version | Date | Description |
 |----------|------------|------------------------------------------------|
+| v2.1 | 2026-07-13 | Documentation enhancement: bilingual headings, Mermaid flowcharts, tables, consistent terminology |
 | v2.0 | 2026-07-13 | Unified architecture with Prompt Package, Prompt Philosophy, Multi-modal Pipeline, Sanitization, and deterministic transformation model |
 | v1.0 | 2026-07-13 | Initial Blueprint |
