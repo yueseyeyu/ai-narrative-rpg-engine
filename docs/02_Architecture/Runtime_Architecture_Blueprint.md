@@ -103,16 +103,21 @@ flowchart TD
 
 ## 6. Runtime State Model（运行时状态模型）
 
-核心状态包括：
+Runtime State 分为 **Persistent State** 和 **Session State** 两个层级。
 
-| State | Description |
-|-------|-------------|
-| Character State | 角色状态 |
-| **Relationship State** | **关系状态（核心）** |
-| World State | 世界状态 |
-| Scene State | 场景状态 |
-| Memory State | 记忆状态 |
-| Timeline State | 时间线状态 |
+| Layer | State | Description |
+|-------|-------|-------------|
+| Persistent State | Character State | 角色状态 |
+| Persistent State | **Relationship State** | **关系状态（核心）** |
+| Persistent State | World State | 世界状态 |
+| Persistent State | Progression State | 进度状态 |
+| Persistent State | Timeline State | 时间线状态 |
+| Session State | Scene State | 场景执行状态 |
+| Session State | Runtime Events | 瞬态运行时事件 |
+| Session State | Active Memory References | 活跃记忆引用 |
+| Session State | Runtime Metadata | 运行时元数据 |
+
+**Detailed Specification:** [Runtime State Model Blueprint](Runtime_State_Model_Blueprint.md)
 
 ---
 
@@ -223,6 +228,7 @@ flowchart LR
 
 **Referenced By:**
 
+- Runtime State Model Blueprint
 - Scene Engine
 - Simulation Layer
 - Relationship Engine
@@ -236,5 +242,6 @@ flowchart LR
 
 | Version | Date | Description |
 |---------|------|-------------|
+| v1.2 | 2026-07-13 | Updated Runtime State Model section to reference Runtime State Model Blueprint; split into Persistent/Session layers |
 | v1.1 | 2026-07-13 | Documentation enhancement: bilingual headings, Mermaid flowcharts, tables, consistent terminology |
 | v1.0 | 2026-07-12 | 初始 Blueprint |
