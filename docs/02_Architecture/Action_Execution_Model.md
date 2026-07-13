@@ -271,7 +271,7 @@ Lifecycle states are categorized into three groups:
 
 | Category | States | Description |
 |----------|--------|-------------|
-| Active | `created`, `queued`, `reserved`, `executing` | Action Record 正在执行旅程中。At most one active Record per Action. |
+| Active | `created`, `queued`, `reserved`, `executing`, `interrupted` | Action Record 正在执行旅程中。At most one active Record per Action. `interrupted` 是 Active 的瞬态子状态 — 可恢复到 `queued` 或转为 `cancelled`。 |
 | Terminal Business | `completed`, `cancelled` | 业务终态 — Action 的执行结果已确定（成功或取消）。不可回退到 Active 状态。Reservation 已释放。允许创建新的 Action Record（Retry / Replay）。 |
 | Post-Terminal Administrative | `archived` | 归档态 — Record 从活跃运行时内存归档，保留供 Debug。不写入持久化存储。这是生命周期的最终状态。 |
 
@@ -285,7 +285,7 @@ Lifecycle states are categorized into three groups:
 | Executing | Active | 已提交到 Simulation Layer | Yes | Yes | In progress |
 | Completed | Terminal Business | SimulationResult 已产出 | Released | Yes | Yes |
 | Cancelled | Terminal Business | 被取消，不产出 SimulationResult | Released | No | No |
-| Interrupted | Active (transient) | 被中断，等待恢复或取消 | Held | Maybe | No |
+| Interrupted | Active (Transient) | 被中断，等待恢复或取消。属于 Active 的瞬态子状态。 | Held | Maybe | No |
 | Archived | Post-Terminal Administrative | 已归档，保留于 Runtime Memory 供 Debug。不写入持久化存储。 | Released | N/A | N/A |
 
 ### Lifecycle Rules（生命周期规则）
@@ -763,6 +763,7 @@ This document intentionally does **not** define the following:
 | v1.0 Draft | 2026-07-13 | Initial document: Runtime Authority Layers framework (Single Authority Principle, 5 layers, derived rules), Action Record as formal Runtime Object (associated with Action via action_id), 8-state Lifecycle, Queue, Scheduling, Reservation, Validation, Execution, Retry, Cancellation, Interruption, Dependency, Determinism & Replay, Runtime Guarantees, Lock Policy, Non-Goals. Foundational Runtime Behavior Specification. |
 | v1.0 Draft (Rev 1) | 2026-07-13 | Architecture Review fixes: (1) Added Execution Identity section explaining action_id / record_id / correlation_id coexistence. (2) Added retry invariant: previous Record MUST be terminal before retry. (3) Unified Archived definition: Runtime Memory only, not persistent storage. (4) Renamed Rule pre-check → Execution Preconditions; added explicit boundary against Mini-Simulation. (5) Changed 'first' → 'foundational' Runtime Behavior Specification. |
 | v1.0 RC1 | 2026-07-13 | Terminal State terminology refinement: distinguished Terminal Business States (Completed, Cancelled) from Post-Terminal Administrative State (Archived). Added State Categories table. Updated all references across Lifecycle Rules, Runtime Guarantees, Retry Rules, and Exactly One Invariant. Promoted to Release Candidate after Architecture Review approval. |
+| v1.0 RC1 (Fix) | 2026-07-14 | Readability fix: added `interrupted` to Active category in State Categories table with transient note. Unified category label as "Active (Transient)" in Lifecycle States table. RC frozen — no further terminology changes. |
 
 ---
 
