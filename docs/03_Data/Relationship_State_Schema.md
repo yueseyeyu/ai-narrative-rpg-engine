@@ -1,6 +1,6 @@
 # Relationship State Schema
 
-**Version:** v1.0 RC1  
+**Version:** v1.0 RC2  
 **Status:** Release Candidate  
 **Last Updated:** 2026-07-13
 
@@ -36,7 +36,23 @@ It is a continuously evolving directed entity that lives independently between t
 
 ---
 
-## 2. Responsibilities（职责）
+## 2. Design Principles（设计原则）
+
+| Principle | Description |
+|-----------|-------------|
+| Relationship Is Entity | 关系是独立实体。Relationship is an independent Runtime Entity, not owned by either Character — it belongs to the Relationship Manager. |
+| Participant Independence | 参与者独立。Relationship always references Characters, never owns them. Participant lifecycle changes (e.g., deletion) do not destroy the Relationship Entity. |
+| Directed Graph Model | 有向图模型。Relationship has directionality. `A→B` state ≠ `B→A` state. All state domains are directional by default unless explicitly marked `shared`. |
+| Profile Is Identity | Profile 是身份。Profile defines "what this relationship is" — minimal and stable. |
+| State Is Evolution | State 是演变。State defines "how this relationship is going" — complex and dynamic. |
+| Temporal Separation | 时间尺度分离。Three temporal layers: Runtime (minutes), State (months/years), Profile (years). |
+| Reference Everything External | 外部数据一律引用。Memory, Event, Topic, Quest data are referenced by IDs only, never embedded. |
+| Derived Over Stored | 派生优于存储。Dynamic and phase fields are not stored — they are derived from State. Derived data is deterministic, reproducible, and traceable. |
+| Implementation-Agnostic | 实现无关。This document defines structure, not programming language classes or database schemas. |
+
+---
+
+## 3. Responsibilities（职责）
 
 ### Responsible For（负责）
 
@@ -56,45 +72,11 @@ It is a continuously evolving directed entity that lives independently between t
 - Behavior Tendency computation (owned by Relationship Engine)
 - Relationship Constraints generation (owned by Relationship Engine)
 - Determining Character behavior directly — Relationship only exposes state; Simulation / Narrative / Prompt consume it
+- Hardware-specific implementation details (see Relationship Engine Blueprint)
 
 ---
 
-## 3. Document Governance（文档治理）
-
-**Owner:** Relationship Architect
-
-**Reviewers:**
-
-- Runtime Architect
-- Simulation Architect
-- Narrative Architect
-
-**Approval:** Architecture Review Required
-
-**Update Policy:** Changes affecting domain structure, ownership boundaries, Profile/State separation, or Lifecycle states require ADR approval.
-
-**Parent Blueprint:** [Relationship Engine Blueprint](../02_Architecture/Relationship_Engine_Blueprint.md)  
-**Parent Schema:** [Runtime State Model Blueprint](../02_Architecture/Runtime_State_Model_Blueprint.md)
-
----
-
-## 4. Design Principles（设计原则）
-
-| Principle | Description |
-|-----------|-------------|
-| Relationship Is Entity | 关系是独立实体。Relationship is an independent Runtime Entity, not owned by either Character — it belongs to the Relationship Manager. |
-| Participant Independence | 参与者独立。Relationship always references Characters, never owns them. Participant lifecycle changes (e.g., deletion) do not destroy the Relationship Entity. |
-| Directed Graph Model | 有向图模型。Relationship has directionality. `A→B` state ≠ `B→A` state. All state domains are directional by default unless explicitly marked `shared`. |
-| Profile Is Identity | Profile 是身份。Profile defines "what this relationship is" — minimal and stable. |
-| State Is Evolution | State 是演变。State defines "how this relationship is going" — complex and dynamic. |
-| Temporal Separation | 时间尺度分离。Three temporal layers: Runtime (minutes), State (months/years), Profile (years). |
-| Reference Everything External | 外部数据一律引用。Memory, Event, Topic, Quest, and Scene data are referenced by IDs only, never embedded. |
-| Derived Over Stored | 派生优于存储。Dynamic and phase fields are not stored — they are derived from State. Derived data is deterministic, reproducible, and traceable. |
-| Implementation-Agnostic | 实现无关。This document defines structure, not programming language classes or database schemas. |
-
----
-
-## 5. Architecture Overview（架构总览）
+## 4. Architecture Overview（架构总览）
 
 ```mermaid
 flowchart TD
@@ -129,13 +111,15 @@ flowchart TD
 
 ---
 
-## 6. Relationship Profile（关系档案）
+## 5. Relationship Profile（关系档案）
 
 Relationship Profile is the **minimal, stable identity** of a relationship. It defines *what this relationship is* — not how it is going.
 
 Relationship Profile 是关系的**极简、稳定的身份**。它定义*这段关系是什么*，而非关系如何。
 
-### 6.1 Core Identity（核心身份）
+> **Future Modularization:** As the Engine grows, Relationship Profile may be split into multiple independent sub-profiles (Relationship Dynamics Profile, Relationship Communication Profile, Relationship Contract Profile). Profile is designed to be modular — each sub-profile would be an independent, versionable unit. This document defines the initial unified structure; future versions may split Profile without breaking the Profile/State boundary.
+
+### 5.1 Core Identity（核心身份）
 
 | Field | Description | Mutability |
 |-------|-------------|------------|
@@ -147,7 +131,7 @@ Relationship Profile 是关系的**极简、稳定的身份**。它定义*这段
 | creation_tick | 关系创建时的 Simulation Tick | Immutable |
 | origin_world | 关系来源世界 | Immutable |
 
-### 6.2 Relationship Type（关系类型）
+### 5.2 Relationship Type（关系类型）
 
 | Field | Description | Mutability |
 |-------|-------------|------------|
@@ -159,13 +143,13 @@ Relationship Profile 是关系的**极简、稳定的身份**。它定义*这段
 
 ---
 
-## 7. Relationship State（关系运行时状态）
+## 6. Relationship State（关系运行时状态）
 
 Relationship State is the **dynamic, directed evolution** of a relationship. It tracks how the relationship is going in each semantic dimension.
 
 Relationship State 是关系的**动态、有向演变**。它追踪关系在每个语义维度上的进展。
 
-### 7.1 Directed State Pattern（有向状态模式）
+### 6.1 Directed State Pattern（有向状态模式）
 
 All persistent domains (except Interaction Domain and parts of History Domain) must implement the **Directed State Pattern**:
 
@@ -177,7 +161,7 @@ All persistent domains (except Interaction Domain and parts of History Domain) m
 
 > **Rule:** `A→B` and `B→A` are **independent** states. The system must **never** assume symmetry unless explicitly computed. This ensures realistic relationship modeling — A may trust B deeply while B remains suspicious of A.
 
-### 7.2 Emotional Domain（情感域）
+### 6.2 Emotional Domain（情感域）
 
 Records long-term emotional states between participants (temporal scale: months/years).
 
@@ -191,7 +175,7 @@ Records long-term emotional states between participants (temporal scale: months/
 
 > **Alignment:** These dimensions align with the Relationship Engine Blueprint's "Dynamic Dimensions" (Emotional Momentum, Jealousy) and core dimension (Affection).
 
-### 7.3 Trust Domain（信任域）
+### 6.3 Trust Domain（信任域）
 
 Records trust-related dimensions (temporal scale: months/years).
 
@@ -203,7 +187,7 @@ Records trust-related dimensions (temporal scale: months/years).
 
 > **Decay Rate:** Familiarity decays slowly; Trust changes through events; Respect is difficult to regain once lost. See Relationship Engine Blueprint §10.
 
-### 7.4 Commitment Domain（承诺域）
+### 6.4 Commitment Domain（承诺域）
 
 Records commitment and bond-related dimensions (temporal scale: months/years).
 
@@ -216,7 +200,7 @@ Records commitment and bond-related dimensions (temporal scale: months/years).
 
 > **Decay Rate:** Attachment rarely decreases naturally; Intimacy requires sustained interaction to maintain; Dependency may increase or decrease through life events. See Relationship Engine Blueprint §10.
 
-### 7.5 Interaction Domain（交互域）
+### 6.5 Interaction Domain（交互域）
 
 Records interaction frequency and patterns. This domain is **bidirectional** — interaction statistics are shared, not directed.
 
@@ -228,7 +212,7 @@ Records interaction frequency and patterns. This domain is **bidirectional** —
 | preferred_interaction_modes | shared | 偏好交互模式列表（如 "deep_conversation", "shared_activity", "conflict"） | Simulation Layer |
 | positive_ratio | shared | 正面交互占比 (0.0 – 1.0) | Simulation Layer (derived) |
 
-### 7.6 History Domain（历史域）
+### 6.6 History Domain（历史域）
 
 Records the historical trajectory of the relationship. Only stores IDs and summaries — never full content.
 
@@ -242,23 +226,26 @@ Records the historical trajectory of the relationship. Only stores IDs and summa
 
 > **Rule:** Event IDs reference Memory System objects. Relationship State never stores event content — only references.
 
-### 7.7 Runtime Domain（运行时域）
+### 6.7 Runtime Domain（运行时域）
 
 Scene-scoped temporary state. Exists only during the current Scene execution. Discarded at Scene completion unless explicitly promoted to Persistent State by Simulation Layer.
 
 | Field | Direction | Description | Owner |
 |-------|-----------|-------------|-------|
-| current_scene_id | shared | 当前 Scene ID | Scene Engine |
+| interaction_context | shared | 当前交互上下文（如 "negotiation", "comfort", "argument"） | Scene Engine |
+| scene_flags | shared | 当前 Scene 的临时关系标志（如 "forced_proximity", "mediated", "public_setting"） | Scene Engine |
 | current_tension | shared | 当前张力 (0.0 – 1.0) | Simulation Layer |
-| current_interaction_mode | shared | 当前交互模式（如 "negotiation", "comfort", "argument"） | Scene Engine |
 | emotional_charge | A→B / B→A | 当前情感电荷 (−1.0 – 1.0) | Simulation Layer |
+| temporary_modifiers | shared | 当前 Scene 的临时状态修正器列表 | Simulation Layer |
 | pending_shift | shared | 是否有待提交的状态变更 | Simulation Layer |
 
 > **Rule:** Runtime Domain data **must never** survive Scene transition unless explicitly promoted by Simulation Layer to a persistent domain. This mirrors the Session State / Persistent State separation in Runtime State Model Blueprint.
+>
+> **No scene_id Duplication:** Runtime Domain does **not** store `current_scene_id`. The current Scene is owned by Scene Engine — querying it through Scene Manager avoids SSOT violation. Relationship State only stores relationship-relevant execution context.
 
 ---
 
-## 8. References（引用域）
+## 7. References（引用域）
 
 All external data is referenced by IDs only, **never embedded**.
 
@@ -270,19 +257,20 @@ All external data is referenced by IDs only, **never embedded**.
 | significant_event_ids | 重要事件 ID 列表 | Memory System |
 | quest_ids | 相关任务 ID 列表 | Quest System (Future) |
 | topic_ids | 相关话题 ID 列表 | Future Topic System |
-| scene_ids | 双方共同参与的 Scene ID 列表 | Scene Engine |
 
 > **Rule:** Relationship never owns participants. Participant lifecycle is managed exclusively by Character Manager. Relationship only stores references.
+>
+> **No scene_ids:** Relationship does not maintain a list of shared Scene IDs. Scene history belongs to Scene System; shared experiences are tracked through `shared_memory_ids` in Memory System, which is the single source of truth for experiential history. Querying shared Scenes is done through Memory → Scene reference, not through Relationship State.
 
 ---
 
-## 9. Derived Registry（派生数据注册表）
+## 8. Derived Registry（派生数据注册表）
 
 Derived Data is computed at runtime from State fields. It is **never serialized** — it is recomputed on load. This prevents Save file bloat and eliminates consistency bugs.
 
 派生数据在运行时从 State 字段计算。它**永不序列化** — 在加载时重新计算。
 
-### 9.1 Derived Rules（派生规则）
+### 8.1 Derived Rules（派生规则）
 
 | Rule | Description |
 |------|-------------|
@@ -291,26 +279,28 @@ Derived Data is computed at runtime from State fields. It is **never serialized*
 | Traceable | 可追溯 — 计算依赖必须有据可查。Computation dependencies must be traceable. |
 | Never Serialized | 永不序列化 — 仅存在于 Runtime。Exists only in Runtime, never in Save files. |
 
-### 9.2 Derived Fields（派生字段）
+### 8.2 Derived Fields（派生字段）
 
 | Derived Field | Domain | Derivation Rule | Serialized? |
 |---------------|--------|-----------------|-------------|
-| relationship_strength | All | Weighted aggregate of all domain states — used for UI display only, never as ground truth | No |
+| relationship_strength | All | Weighted aggregate of all domain states — UI convenience metric only | No |
 | relationship_tier | All | Tier classification from strength + type (e.g., "stranger", "acquaintance", "close_friend", "soulmate") | No |
 | trust_asymmetry | Trust | `abs(a_to_b.trust - b_to_a.trust)` — measures trust gap | No |
 | interaction_frequency | Interaction | Computed from `total_interactions` and `last_interaction_tick` relative to current Tick | No |
 | positive_ratio | Interaction | `positive_event_ids.length / (positive_event_ids.length + conflict_event_ids.length)` | No |
 | emotional_volatility | Emotional | Variance of `emotional_momentum` over recent history | No |
 | stability_index | All | Composite metric from asymmetry, volatility, and decay rates | No |
-| behavior_tendency_ref | All | Reference to Behavior Tendency output produced by Relationship Engine (Scene-scoped, not persisted) | No |
+| behavior_projection | All | Abstract projection of relationship state into behavioral implications (Scene-scoped, not persisted) | No |
 
-> **Rule:** `relationship_strength` and `relationship_tier` are **UI display only** — they are never used as the source of truth for any simulation decision. This aligns with the Relationship Engine Blueprint's "Relationship Score is never used as the source of truth" principle.
+> **Rule:** Relationship Strength is a **UI convenience metric** and must **never** be used as a simulation source of truth. All simulation decisions must read individual domain states directly. This aligns with the Relationship Engine Blueprint's principle: "Relationship Score is never used as the source of truth."
+>
+> **Abstract Naming:** `behavior_projection` is intentionally abstract — it does not reference any specific Engine output name (e.g., "Behavior Tendency"). This ensures the Schema remains stable even if the consuming Engine's output format changes.
 
 ---
 
-## 10. Ownership & Mutation Rules（归属与变更规则）
+## 9. Ownership & Mutation Rules（归属与变更规则）
 
-### 10.1 Ownership Table（归属表）
+### 9.1 Ownership Table（归属表）
 
 | Domain | Owner | Read-Only Access |
 |--------|-------|-----------------|
@@ -320,16 +310,16 @@ Derived Data is computed at runtime from State fields. It is **never serialized*
 | Relationship State — Commitment | Simulation Layer | Narrative Director, Prompt Builder |
 | Relationship State — Interaction | Simulation Layer | Narrative Director, Prompt Builder |
 | Relationship State — History | Simulation Layer | Narrative Director, Prompt Builder, Memory System |
-| Relationship State — Runtime | Scene Engine (scene_id, interaction_mode) + Simulation Layer (tension, charge, pending_shift) | Narrative Director, Prompt Builder |
+| Relationship State — Runtime | Scene Engine (interaction_context, scene_flags) + Simulation Layer (tension, charge, modifiers, pending_shift) | Narrative Director, Prompt Builder |
 | References | Simulation Layer (IDs managed by respective systems) | Narrative Director, Prompt Builder, Memory System |
 | Derived Registry | Computed (no owner — recomputed on load) | All modules (read-only) |
 
-### 10.2 Mutation Rights（变更权限）
+### 9.2 Mutation Rights（变更权限）
 
 | Rule | Description |
 |------|-------------|
 | Simulation Layer is the sole persistent mutation authority | 只有 Simulation Layer 可以变更 Persistent Relationship State。Only Simulation Layer may mutate Persistent Relationship State. |
-| Scene Engine owns execution-context fields | Scene Engine 拥有 current_scene_id、current_interaction_mode。Simulation Layer 不直接修改这些字段。 |
+| Scene Engine owns execution-context fields | Scene Engine 拥有 interaction_context、scene_flags。Simulation Layer 不直接修改这些字段。 |
 | Runtime Domain is Scene-scoped only | Runtime Domain 数据在 Scene 结束时丢弃，除非 Simulation Layer 显式提升为 Persistent。 |
 | Relationship Engine operates via Simulation Layer | Relationship Engine 通过 Simulation Layer 请求变更，不直接修改 Relationship State。 |
 | Narrative Director is read-only | Narrative Director 只读消费 Relationship State。 |
@@ -339,7 +329,7 @@ Derived Data is computed at runtime from State fields. It is **never serialized*
 
 ---
 
-## 11. Relationship Lifecycle（关系生命周期）
+## 10. Relationship Lifecycle（关系生命周期）
 
 Every Relationship has a defined lifecycle from creation to archival.
 
@@ -379,6 +369,20 @@ stateDiagram-v2
 | Archived | 关系已结束，历史保留 | Yes (read-only) | No |
 | Orphaned | 一方缺失（删除/离开），数据保留 | Yes (read-only) | No |
 
+### Lifecycle Transitions（生命周期转换）
+
+| Transition | Trigger | Owner |
+|-----------|---------|-------|
+| Create | First interaction between participants | Simulation Layer |
+| Created → Established | Mutual awareness achieved | Simulation Layer |
+| Established → Active | Frequent interaction detected | Simulation Layer |
+| Active → Dormant | Long silence (decay threshold reached) | Simulation Layer |
+| Dormant → Active | Re-engagement (new interaction) | Simulation Layer |
+| Active → Archived | Relationship concluded (story event) | Simulation Layer |
+| Dormant → Archived | Abandoned (long-term dormancy threshold) | Simulation Layer |
+| Established → Dormant | Drift apart (gradual decay) | Simulation Layer |
+| Any Active/Dormant/Archived → Orphaned | Participant deleted or permanently removed | Character Manager |
+
 ### Lifecycle Rules（生命周期规则）
 
 | Rule | Description |
@@ -391,16 +395,19 @@ stateDiagram-v2
 
 ---
 
-## 12. Runtime Guarantees（运行时保证）
+## 11. Runtime Guarantees（运行时保证）
 
 Relationship State Schema guarantees:
 
 - Relationship is an independent Entity — it is not owned by either participant Character.
 - All persistent state domains implement the Directed State Pattern — `A→B` ≠ `B→A`.
-- All external data (Memory, Event, Quest, Topic, Scene) is referenced by IDs, never embedded.
+- All external data (Memory, Event, Quest, Topic) is referenced by IDs, never embedded.
 - No field in Relationship State has dual ownership — every field has exactly one mutation authority.
 - Runtime Domain data does not survive Scene transition unless explicitly promoted by Simulation Layer.
+- Runtime Domain does not store `scene_id` — Scene context is queried through Scene Manager.
+- References Domain does not store `scene_ids` — shared Scene history is queried through Memory System.
 - All Derived Data is recomputed on load and never serialized.
+- Relationship Strength is a UI convenience metric and must never be used as a simulation source of truth.
 - Relationship State is included in Runtime State Snapshots.
 - Relationship State supports Branch/Fork semantics for deterministic replay.
 - Failed Scene execution rolls back Relationship State to the Snapshot without corruption.
@@ -409,7 +416,7 @@ Relationship State Schema guarantees:
 
 ---
 
-## 13. Serialization Rules（序列化规则）
+## 12. Serialization Rules（序列化规则）
 
 | Rule | Description |
 |------|-------------|
@@ -450,29 +457,28 @@ Relationship Data
     ├── interaction_domain (bidirectional)
     │   ├── total_interactions
     │   ├── last_interaction_tick
-    │   └── preferred_interaction_modes
-    │   (interaction_frequency: derived — not serialized)
-    │   (positive_ratio: derived — not serialized)
+    │   ├── preferred_interaction_modes
+    │   ├── (interaction_frequency: Derived — not serialized)
+    │   └── (positive_ratio: Derived — not serialized)
     ├── history_domain
     │   ├── milestone_event_ids
     │   ├── conflict_event_ids
     │   ├── positive_event_ids
     │   ├── arc_summary
     │   └── last_major_shift_tick
-    ├── runtime_domain (Temporary — not serialized)
-    │   ├── (Scene Engine: scene_id, interaction_mode)
-    │   └── (Simulation Layer: tension, charge, pending_shift)
+    ├── runtime_domain (Temporary — Not Serialized)
+    │   ├── (Scene Engine: interaction_context, scene_flags)
+    │   └── (Simulation Layer: tension, charge, temporary_modifiers, pending_shift)
     └── references_domain
         ├── shared_memory_ids
         ├── significant_event_ids
         ├── quest_ids
-        ├── topic_ids
-        └── scene_ids
+        └── topic_ids
 ```
 
 ---
 
-## 14. Snapshot & Branch Behavior（快照与分支行为）
+## 13. Snapshot & Branch Behavior（快照与分支行为）
 
 | Operation | Behavior |
 |-----------|----------|
@@ -484,21 +490,7 @@ Relationship Data
 
 ---
 
-## 15. Hardware Considerations（硬件考量）
-
-**Target Hardware:** RTX 5060 8GB / 32GB RAM
-
-| Consideration | Description |
-|---------------|-------------|
-| In-memory Relationship State | Relationship State 应在内存中维护，避免频繁磁盘 I/O |
-| Directed State Efficiency | 有向状态应使用紧凑结构存储 a_to_b / b_to_a，避免冗余 |
-| Graph Traversal Performance | 关系图谱遍历应优化为 O(1) 边查询 |
-| Snapshot Size | Relationship State 快照应保持精简，Derived 数据不包含 |
-| Background Persistence | 关系持久化应在后台异步执行，不阻塞 Scene 执行 |
-
----
-
-## 16. Future Extensibility（未来扩展）
+## 14. Future Extensibility（未来扩展）
 
 | Feature | Description |
 |---------|-------------|
@@ -510,12 +502,13 @@ Relationship Data
 | Relationship Templates | 预定义关系模板，快速生成初始关系 |
 | Dynamic Dimension Injection | 支持世界级自定义关系维度（Mod-defined Dimensions） |
 | Relationship Network Analysis | 关系网络分析 — 群体关系图谱、影响力传播、派系检测 |
+| Profile Modularization | Profile 模块化 — 将 Profile 拆分为多个独立子 Profile（Relationship Dynamics Profile, Relationship Communication Profile, Relationship Contract Profile），每个子 Profile 可独立版本化和演化 |
 
 These features must conform to the Directed State Pattern, Reference-by-ID rules, and Lifecycle definitions in this document.
 
 ---
 
-## 17. Schema Lock Policy（Schema 锁定策略）
+## 15. Schema Lock Policy（Schema 锁定策略）
 
 Once this Schema is locked, the following governance rules apply:
 
@@ -530,7 +523,7 @@ Once this Schema is locked, the following governance rules apply:
 
 ---
 
-## References
+## 16. References
 
 **Depends On:**
 
@@ -552,8 +545,29 @@ Once this Schema is locked, the following governance rules apply:
 
 ---
 
-## Revision History
+## 17. Revision History
 
 | Version | Date | Description |
 |---------|------|-------------|
-| v1.0 RC1 | 2026-07-13 | Initial Schema: Profile/State separation; 6 state domains (Emotional, Trust, Commitment, Interaction, History, Runtime); Directed State Pattern (A→B / B→A / shared); Derived Registry (8 derived fields); Relationship Lifecycle (6 states); Serialization rules; Schema Lock Policy |
+| v1.0 RC1 | 2026-07-13 | Initial Schema: Profile/State separation; 6 state domains; Directed State Pattern; Derived Registry; Relationship Lifecycle; Serialization rules |
+| v1.0 RC2 | 2026-07-13 | Style unification with Character v1.3: moved Document Governance to end; removed Hardware Considerations (belongs to Blueprint); removed scene_id from Runtime Domain (SSOT); removed scene_ids from References (SSOT); renamed behavior_tendency_ref to behavior_projection (abstract naming); strengthened relationship_strength UI-only declaration; added Lifecycle Transition Owner column; annotated Derived in Serialization Tree; added Profile Modularization to Future Extensibility; added Referenced By section |
+
+---
+
+## 18. Document Governance（文档治理）
+
+**Owner:** Relationship Architect
+
+**Reviewers:**
+
+- Runtime Architect
+- Simulation Architect
+- Narrative Architect
+
+**Approval:** Architecture Review Required
+
+**Update Policy:** Changes affecting domain structure, ownership boundaries, Profile/State separation, or Lifecycle states require ADR approval.
+
+**Parent Blueprint:** [Relationship Engine Blueprint](../02_Architecture/Relationship_Engine_Blueprint.md)
+
+**Parent Schema:** [Runtime State Model Blueprint](../02_Architecture/Runtime_State_Model_Blueprint.md)
