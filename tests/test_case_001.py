@@ -9,16 +9,16 @@ from __future__ import annotations
 from runtime import Action
 
 
-def test_case_001_determinism(initial_state, simulation):
+def test_case_001_determinism(initial_state, simulation, make_context):
     """Two Simulation Ticks with identical inputs must produce identical results."""
     snapshot = initial_state.snapshot()
-    action = Action(
-        action_id="a1", action_type="say_hello", actor="A", target="B"
-    )
+    action = Action(action_id="a1", action_type="say_hello", actor="A", target="B")
 
     # Execute twice with identical inputs
-    result1 = simulation.tick(action, snapshot, seed=42)
-    result2 = simulation.tick(action, snapshot, seed=42)
+    context1 = make_context(action, snapshot, seed=42)
+    context2 = make_context(action, snapshot, seed=42)
+    result1 = simulation.tick(context1)
+    result2 = simulation.tick(context2)
 
     # Assert: status matches
     assert result1.status == result2.status
@@ -34,3 +34,7 @@ def test_case_001_determinism(initial_state, simulation):
         f"  result1: {hash1}\n"
         f"  result2: {hash2}"
     )
+
+    # Assert: version info matches (for cross-version replay)
+    assert result1.handler_version == result2.handler_version
+    assert result1.simulation_version == result2.simulation_version

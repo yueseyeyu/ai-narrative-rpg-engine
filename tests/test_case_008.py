@@ -8,6 +8,9 @@ Protocol:
     2. Create a fresh state with identical initial conditions
     3. Re-execute with same inputs → record result_hash
     4. Assert hashes match (determinism verification)
+
+Also verifies: handler_version and simulation_version are included in the hash,
+ensuring cross-version replay mismatches are detectable.
 """
 
 from __future__ import annotations
@@ -15,15 +18,14 @@ from __future__ import annotations
 from runtime import Action, CharacterState, RuntimeState
 
 
-def test_case_008_replayability(initial_state, simulation):
+def test_case_008_replayability(initial_state, simulation, make_context):
     """Replay must produce the same SimulationResult hash as the original."""
     # Original execution
     snapshot1 = initial_state.snapshot()
-    action = Action(
-        action_id="a1", action_type="say_hello", actor="A", target="B"
-    )
+    action = Action(action_id="a1", action_type="say_hello", actor="A", target="B")
 
-    result1 = simulation.tick(action, snapshot1, seed=42)
+    context1 = make_context(action, snapshot1, seed=42)
+    result1 = simulation.tick(context1)
     hash1 = result1.result_hash()
 
     # Replay: create a fresh state with identical initial conditions
@@ -32,7 +34,8 @@ def test_case_008_replayability(initial_state, simulation):
     state2.characters["B"] = CharacterState("B", "Bob", trust=10.0)
     snapshot2 = state2.snapshot()
 
-    result2 = simulation.tick(action, snapshot2, seed=42)
+    context2 = make_context(action, snapshot2, seed=42)
+    result2 = simulation.tick(context2)
     hash2 = result2.result_hash()
 
     # Assert: hashes match — determinism verified
@@ -45,3 +48,7 @@ def test_case_008_replayability(initial_state, simulation):
     # Assert: full result comparison (not just hash)
     assert result1.status == result2.status
     assert result1.valid_deltas == result2.valid_deltas
+
+    # Assert: version info is consistent (for cross-version replay)
+    assert result1.handler_version == result2.handler_version
+    assert result1.simulation_version == result2.simulation_version

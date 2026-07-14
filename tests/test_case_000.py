@@ -12,7 +12,9 @@ from __future__ import annotations
 from runtime import Action
 
 
-def test_case_000_simulation_does_not_mutate_state(initial_state, simulation):
+def test_case_000_simulation_does_not_mutate_state(
+    initial_state, simulation, make_context
+):
     """Simulation MUST NOT modify RuntimeState.
 
     After executing a Simulation Tick, the live RuntimeState must be
@@ -26,12 +28,11 @@ def test_case_000_simulation_does_not_mutate_state(initial_state, simulation):
 
     # Create snapshot and action
     snapshot = state.snapshot()
-    action = Action(
-        action_id="a1", action_type="say_hello", actor="A", target="B"
-    )
+    action = Action(action_id="a1", action_type="say_hello", actor="A", target="B")
 
     # Execute Simulation Tick
-    result = simulation.tick(action, snapshot, seed=42)
+    context = make_context(action, snapshot)
+    result = simulation.tick(context)
 
     # Assert: SimulationResult was produced
     assert result.status == "success"

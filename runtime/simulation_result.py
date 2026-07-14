@@ -16,7 +16,11 @@ from typing import Any
 
 @dataclass(frozen=True)
 class Delta:
-    """A state change delta — computed by Simulation, applied by State Authority."""
+    """A state change delta — computed by Simulation, applied by State Authority.
+
+    Value type recommendation (GPT): restrict `val` to Primitive, Frozen Dataclass,
+    or Tuple for deep immutability. Avoid list/dict which remain mutable.
+    """
 
     target_id: str
     target_type: str  # "character", "relationship", "world", "progression"
@@ -39,14 +43,20 @@ class SimulationResult:
     invalid_deltas: tuple[Delta, ...] = ()
     event_candidates: tuple[dict[str, Any], ...] = ()
     validated_state_hash: str = ""
+    # Version info for cross-version replay verification (GPT suggestion)
+    handler_version: str = "0.1.0"
+    simulation_version: str = "0.1.0"
 
     def result_hash(self) -> str:
         """Compute a deterministic hash for replay verification.
 
-        Excludes result_id and input_snapshot_id (runtime-specific, not deterministic).
-        Includes status, valid_deltas, event_candidates — the computational output.
+        Includes: handler_version, simulation_version, status, valid_deltas,
+        event_candidates. Excludes: result_id, input_snapshot_id (runtime-specific).
+        Version info ensures cross-version replay mismatches are detectable.
         """
         data = {
+            "handler_version": self.handler_version,
+            "simulation_version": self.simulation_version,
             "status": self.status,
             "valid_deltas": [
                 {

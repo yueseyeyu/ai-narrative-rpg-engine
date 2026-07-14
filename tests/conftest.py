@@ -8,7 +8,8 @@ from handlers.say_hello import SayHelloHandler
 from runtime import (
     CharacterState,
     RuntimeState,
-    Simulation,
+    SimulationContext,
+    SimulationRuntime,
 )
 
 
@@ -22,8 +23,18 @@ def initial_state() -> RuntimeState:
 
 
 @pytest.fixture
-def simulation() -> Simulation:
-    """Create a Simulation instance with SayHelloHandler registered."""
-    sim = Simulation()
+def simulation() -> SimulationRuntime:
+    """Create a SimulationRuntime with SayHelloHandler registered."""
+    sim = SimulationRuntime()
     sim.register_handler("say_hello", SayHelloHandler())
     return sim
+
+
+@pytest.fixture
+def make_context():
+    """Factory fixture to create SimulationContext."""
+
+    def _make(action, snapshot, seed=42):
+        return SimulationContext(action=action, snapshot=snapshot, seed=seed)
+
+    return _make

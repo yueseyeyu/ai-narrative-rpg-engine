@@ -5,11 +5,11 @@ Action → Simulation → SimulationResult → Commit → State → Replay
 """
 
 from .action import Action
-from .state import RuntimeState, CharacterState
-from .snapshot import StateSnapshot
-from .simulation_result import Delta, SimulationResult
-from .simulation import Simulation, Handler
 from .commit import CommitPipeline
+from .simulation import Handler, SimulationContext, SimulationRuntime
+from .simulation_result import Delta, SimulationResult
+from .snapshot import StateSnapshot
+from .state import CharacterState, RuntimeState
 
 __all__ = [
     "Action",
@@ -18,7 +18,8 @@ __all__ = [
     "StateSnapshot",
     "Delta",
     "SimulationResult",
-    "Simulation",
+    "SimulationContext",
+    "SimulationRuntime",
     "Handler",
     "CommitPipeline",
 ]

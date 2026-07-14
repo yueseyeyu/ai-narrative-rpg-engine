@@ -15,20 +15,19 @@ from __future__ import annotations
 from runtime import Action, CommitPipeline
 
 
-def test_case_002_mutation_boundary(initial_state, simulation):
+def test_case_002_mutation_boundary(initial_state, simulation, make_context):
     """Only CommitPipeline may mutate RuntimeState. Simulation does not."""
     state = initial_state
     snapshot = state.snapshot()
-    action = Action(
-        action_id="a1", action_type="say_hello", actor="A", target="B"
-    )
+    action = Action(action_id="a1", action_type="say_hello", actor="A", target="B")
 
     # Step 1: Record initial state
     trust_b_before = state.characters["B"].trust
     assert trust_b_before == 10.0
 
     # Step 2: Execute Simulation
-    result = simulation.tick(action, snapshot, seed=42)
+    context = make_context(action, snapshot)
+    result = simulation.tick(context)
 
     # Step 3: State is UNCHANGED after simulation
     assert state.characters["B"].trust == trust_b_before
