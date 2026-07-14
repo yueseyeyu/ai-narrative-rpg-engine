@@ -11,7 +11,8 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass, field
-from typing import Any
+from types import MappingProxyType
+from typing import Any, Mapping
 
 
 @dataclass(frozen=True)
@@ -20,6 +21,9 @@ class Delta:
 
     Value type recommendation (GPT): restrict `val` to Primitive, Frozen Dataclass,
     or Tuple for deep immutability. Avoid list/dict which remain mutable.
+
+    metadata is wrapped in MappingProxyType for read-only access (GPT Point 7):
+    `delta.metadata["x"] = "y"` raises TypeError. Deep immutability enforced.
     """
 
     target_id: str
@@ -27,7 +31,14 @@ class Delta:
     op: str
     path: str
     val: Any
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        """Convert mutable dict to read-only MappingProxyType for deep immutability."""
+        if not isinstance(self.metadata, MappingProxyType):
+            object.__setattr__(
+                self, "metadata", MappingProxyType(dict(self.metadata))
+            )
 
 
 @dataclass(frozen=True)

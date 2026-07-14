@@ -1,11 +1,12 @@
-"""Runtime core — 5-Layer Authority Pipeline (MVP-0).
+"""Runtime core — 5-Layer Authority Pipeline (MVP-1).
 
 Exposes core objects that validate the architecture contract:
-Action → Simulation → SimulationResult → Commit → State → Replay
+Action → Simulation → SimulationResult → Commit → State → Replay → Scene
 """
 
 from .action import Action
 from .commit import CommitPipeline
+from .scene import SceneResult, SceneRuntime
 from .simulation import (
     Handler,
     SimulationContext,
@@ -31,4 +32,6 @@ __all__ = [
     "Validator",
     "compute_action_hash",
     "CommitPipeline",
+    "SceneRuntime",
+    "SceneResult",
 ]
