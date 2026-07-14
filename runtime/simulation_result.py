@@ -23,38 +23,48 @@ class Delta:
     """
 
     target_id: str
-    target_type: str  # "character", "relationship", "world", "progression"
-    op: str  # "set", "add", "remove", "merge"
-    path: str  # e.g., "trust", "mood"
+    target_type: str
+    op: str
+    path: str
     val: Any
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
 class SimulationResult:
-    """The complete, self-contained result of one Simulation Tick."""
+    """The complete, self-contained result of one Simulation Tick.
+
+    Includes action_hash for replay verification (GPT Point 6):
+    source_action_id is just an ID, not the Action content.
+    Two different Actions with the same ID would produce the same hash without
+    action_hash — dangerous for replay correctness.
+    """
 
     result_id: str
     source_action_id: str
     input_snapshot_id: str
     seed: int
-    status: str  # "success", "partial_success", "failure", "interrupted", "cancelled"
+    status: str
     valid_deltas: tuple[Delta, ...]
     invalid_deltas: tuple[Delta, ...] = ()
     event_candidates: tuple[dict[str, Any], ...] = ()
     validated_state_hash: str = ""
-    # Version info for cross-version replay verification (GPT suggestion)
     handler_version: str = "0.1.0"
     simulation_version: str = "0.1.0"
+    action_hash: str = ""  # Hash of source Action content for replay verification
 
     def result_hash(self) -> str:
         """Compute a deterministic hash for replay verification.
 
-        Includes: handler_version, simulation_version, status, valid_deltas,
-        event_candidates. Excludes: result_id, input_snapshot_id (runtime-specific).
-        Version info ensures cross-version replay mismatches are detectable.
+        Includes: action_hash, handler_version, simulation_version, status,
+        valid_deltas, event_candidates.
+        Excludes: result_id, input_snapshot_id (runtime-specific).
+
+        action_hash (GPT Point 6): Ensures that even if two Actions share the
+        same action_id but have different content, their hashes will differ.
         """
         data = {
+            "action_hash": self.action_hash,
             "handler_version": self.handler_version,
             "simulation_version": self.simulation_version,
             "status": self.status,
