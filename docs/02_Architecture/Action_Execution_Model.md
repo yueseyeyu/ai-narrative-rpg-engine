@@ -725,7 +725,7 @@ This document intentionally does **not** define the following:
 | Simulation rules and computation | Simulation Layer Blueprint |
 | Event structure and commit | Event Object Schema + Timeline Manager |
 | State mutation (Character/Relationship/World) | State Management Layer / Commit Pipeline |
-| Action Type definitions | Future: Action Registry |
+| Action Type definitions | Action Registry (RC1) |
 | Player Intent parsing | Future: Planner / Intent Parser |
 | Narrative planning | Narrative Director Blueprint |
 | Memory generation | Memory Architecture Blueprint |
@@ -745,14 +745,14 @@ This document intentionally does **not** define the following:
 - [Simulation Layer Blueprint](./Simulation_Layer_Blueprint.md)
 - [Runtime State Model Blueprint](./Runtime_State_Model_Blueprint.md)
 - [Glossary](../00_Project/Glossary.md)
-- Future: Action Registry
+- [Action Registry v1.0 RC1](./Action_Registry.md)
 
 **Referenced By:**
 
+- Action Registry (Validation Integration uses AEM)
 - Simulation Layer Blueprint (Action as simulation input)
 - SimulationResult Schema (source_action_id linkage)
 - Future: Runtime Pipeline (Execution stage)
-- Future: Action Registry (Action Type definitions)
 
 ---
 

@@ -701,8 +701,8 @@ Once this Schema is locked, the following governance rules apply:
 - [Runtime State Model Blueprint](../02_Architecture/Runtime_State_Model_Blueprint.md)
 - [Runtime Architecture Blueprint](../02_Architecture/Runtime_Architecture_Blueprint.md)
 - [Glossary](../00_Project/Glossary.md)
-- Future: Action Object Schema
-- Future: Action Execution Model
+- [Action Object Schema v1.0](./Action_Object_Schema.md)
+- [Action Execution Model v1.0 RC1](../02_Architecture/Action_Execution_Model.md)
 
 **Referenced By:**
 
@@ -710,7 +710,7 @@ Once this Schema is locked, the following governance rules apply:
 - Event Object Schema (SimulationResult → Event Candidate generation)
 - Narrative Director Blueprint (SimulationResult consumption for narrative planning)
 - Runtime Architecture Blueprint (Runtime Pipeline)
-- Future: Action Execution Model (SimulationResult as output)
+- Action Execution Model (SimulationResult as AEM output)
 - Future: Commit Pipeline (SimulationResult processing)
 
 ---
