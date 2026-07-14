@@ -1,8 +1,10 @@
 # Memory Architecture Blueprint
 
-**Version:** v1.4  
+**Version:** v1.5  
 **Status:** Draft  
-**Last Updated:** 2026-07-13
+**Last Updated:** 2026-07-14
+
+**Depends On:** [Runtime Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md), [Runtime Infrastructure Blueprint](./Runtime_Infrastructure_Blueprint.md), [Simulation Layer Blueprint](./Simulation_Layer_Blueprint.md), [Runtime State Model Blueprint](./Runtime_State_Model_Blueprint.md), [Scene Engine Blueprint](./Scene_Engine_Blueprint.md), [Runtime Glossary](./Runtime_Glossary.md), [Runtime Artifact Ownership Matrix](./Runtime_Artifact_Ownership_Matrix.md)
 
 ---
 
@@ -110,13 +112,17 @@ Raw conversation history belongs to Persistence Layer rather than Memory System.
 
 **Owner:** Memory Architect
 
-**Reviewers:**
+**Architecture Reviewers:**
 
 - Runtime Architect
 - Simulation Architect
 - AI Runtime Architect
 
-**Approval:** Architecture Review Required
+**Architecture Approval:** Architecture Review Required
+
+**Last Reviewed:** 2026-07-14
+
+**Parent Blueprint:** [Runtime Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md)
 
 **Update Policy:** The following changes require ADR approval:
 
@@ -163,13 +169,16 @@ Implementation tuning does not require ADR.
 
 ### Does NOT Own（不拥有）
 
-- Character State
-- Relationship State
-- World State
-- Narrative Planning
-- Prompt Construction
-- Simulation Rules
+- Character State mutation (owned by State Authority ⑤)
+- Relationship State mutation (owned by State Authority ⑤)
+- World State mutation (owned by State Authority ⑤)
+- Narrative Planning (owned by Narrative Director)
+- Prompt Construction (owned by Prompt Builder)
+- Simulation Rules (owned by Simulation Authority ③)
+- Event Commit (owned by Timeline Manager ④)
 - Raw Chat History
+
+> **Memory SHALL NOT mutate Persistent State.** Memory extraction produces Memory Objects only. It reads committed Events and State as input; it never writes to Character State, Relationship State, World State, or any other Persistent State domain. See [Artifact Ownership Matrix](./Runtime_Artifact_Ownership_Matrix.md) and [Scene Engine Blueprint §12](./Scene_Engine_Blueprint.md).
 
 The Memory System provides information. It never changes Runtime State directly.
 
@@ -177,18 +186,24 @@ The Memory System provides information. It never changes Runtime State directly.
 
 ## 6. Runtime Position（运行时定位）
 
-The Memory System operates in two independent runtime phases.
+The Memory System operates in two independent runtime phases. Both phases are **post-Pipeline** — they operate on committed Events and Runtime State, not on in-flight Simulation Results.
+
+Memory System 运行在两个独立的运行时阶段。两个阶段都是**流水线后**——它们操作已提交的 Event 和 Runtime State，而非进行中的 SimulationResult。
 
 ### Write Pipeline（写入流水线）
 
 ```mermaid
 flowchart TD
-    A[Scene Execution] --> B[Scene Complete]
-    B --> C[Memory Extraction]
-    C --> D[Importance Evaluation]
-    D --> E[Memory Classification]
-    E --> F[Async Persistence]
+    PIPE[Pipeline ①→⑤] --> EVT[Committed Events]
+    PIPE --> STATE[Committed Runtime State]
+    EVT --> ME[Memory Extraction]
+    STATE --> ME
+    ME --> IE[Importance Evaluation]
+    IE --> MC[Memory Classification]
+    MC --> AP[Async Persistence]
 ```
+
+> **Trigger:** Memory extraction is triggered by committed Events from the Pipeline (Layer ④ Reality), not by Scene completion alone. This ensures Memory sees the final, committed state — never uncommitted or rolled-back results.
 
 ### Read Pipeline（读取流水线）
 
@@ -496,18 +511,22 @@ The architecture is designed for future expansion.
 
 **Depends On:**
 
-- Overall Architecture
-- Runtime Architecture
-- Scene Engine Blueprint
-- Simulation Layer Blueprint
-- Relationship Engine Blueprint
-- Glossary
+- [Runtime Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md) — defines Pipeline structure
+- [Runtime Infrastructure Blueprint](./Runtime_Infrastructure_Blueprint.md) — defines storage platform
+- [Simulation Layer Blueprint](./Simulation_Layer_Blueprint.md) — defines SimulationResult (source of extraction)
+- [Runtime State Model Blueprint](./Runtime_State_Model_Blueprint.md) — defines committed state (source of extraction)
+- [Scene Engine Blueprint](./Scene_Engine_Blueprint.md) — defines transaction context
+- [Runtime Glossary](./Runtime_Glossary.md) — defines terminology
+- [Runtime Artifact Ownership Matrix](./Runtime_Artifact_Ownership_Matrix.md) — defines artifact ownership (Memory Object = Provisional)
+- Overall Architecture Blueprint
+- Runtime Architecture Blueprint
 
 **Referenced By:**
 
-- Prompt Builder Blueprint
-- Narrative Director Blueprint
-- Relationship Engine Blueprint
+- [Narrative Director Blueprint](./Narrative_Director_Blueprint.md) — consumes retrieved memories
+- [Relationship Engine Blueprint](./Relationship_Engine_Blueprint.md) — uses memories for relationship evolution
+- [Prompt Builder Blueprint](./Prompt_Builder_Blueprint.md) — injects memories into prompt context
+- [Simulation Layer Blueprint](./Simulation_Layer_Blueprint.md) — may reference historical memories
 - Memory Schema (Future)
 - LLM Runtime Blueprint (Future)
 
@@ -517,6 +536,7 @@ The architecture is designed for future expansion.
 
 | Version | Date | Description |
 |----------|------------|------------------------------------------------------------|
+| v1.5 | 2026-07-14 | **Phase B-2 sync update:** (1) Pipeline alignment — added Pipeline Blueprint reference, updated §6 Write Pipeline to show committed Events as trigger (not just Scene Complete). (2) State mutation boundary — added "Persistent State mutation" to Does NOT Own with ownership attribution. Added Memory SHALL NOT mutate Persistent State constraint. (3) Artifact ownership — added Ownership Matrix reference, Memory Object marked as Provisional. (4) Cross references — added Pipeline, Infrastructure, State Model, Glossary, Artifact Ownership Matrix to Depends On; expanded Referenced By with links. (5) Governance fields updated. |
 | v1.4 | 2026-07-13 | Documentation enhancement: bilingual headings, Mermaid flowcharts, tables, consistent terminology |
 | v1.3 | 2026-07-13 | Added Memory Activation, refined Accuracy definition, clarified asynchronous persistence, storage-agnostic architecture, deterministic retrieval guarantees |
 | v1.2 | 2026-07-13 | Added Memory Activation, refined Accuracy definition, clarified asynchronous persistence, storage-agnostic architecture, deterministic retrieval guarantees |

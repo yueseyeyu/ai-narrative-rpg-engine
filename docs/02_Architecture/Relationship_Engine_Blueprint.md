@@ -1,8 +1,10 @@
 # Relationship Engine Blueprint
 
-**Version:** v2.3  
+**Version:** v2.4  
 **Status:** Draft  
-**Last Updated:** 2026-07-13
+**Last Updated:** 2026-07-14
+
+**Depends On:** [Runtime Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md), [Simulation Layer Blueprint](./Simulation_Layer_Blueprint.md), [Runtime State Model Blueprint](./Runtime_State_Model_Blueprint.md), [Runtime Glossary](./Runtime_Glossary.md), [Runtime Artifact Ownership Matrix](./Runtime_Artifact_Ownership_Matrix.md)
 
 ---
 
@@ -38,11 +40,11 @@ It is a continuously evolving runtime domain.
 
 ### Responsible For（负责）
 
-- Managing persistent Relationship State
+- Computing relationship deltas (State Authority manages mutation)
 - Calculating relationship evolution
 - Maintaining relationship consistency
-- Producing Behavior Tendency
-- Producing Relationship Constraints
+- Computing Behavior Tendency
+- Computing Relationship Constraints
 - Applying decay and recovery
 - Resolving relationship conflicts
 - Supporting long-term emotional progression
@@ -62,12 +64,16 @@ It is a continuously evolving runtime domain.
 
 **Owner:** Relationship Architect
 
-**Reviewers:**
+**Architecture Reviewers:**
 
 - Runtime Architect
 - Simulation Architect
 
-**Approval:** Architecture Review Required
+**Architecture Approval:** Architecture Review Required
+
+**Last Reviewed:** 2026-07-14
+
+**Parent Blueprint:** [Simulation Layer Blueprint](./Simulation_Layer_Blueprint.md)
 
 **Update Policy:**
 
@@ -95,37 +101,42 @@ It is a continuously evolving runtime domain.
 
 ### Owns（拥有）
 
-- Relationship Dimensions
-- Relationship Rules
-- Behavior Tendency
-- Relationship Constraints
-- Evolution Logic
+- Relationship dimension rules and evolution logic
+- Behavior Tendency computation (Confidence: Provisional)
+- Relationship Constraints computation (Confidence: Provisional)
+- Relationship delta calculation
 
 ### Does NOT Own（不拥有）
 
-- Dialogue
-- Story Writing
-- Images
-- UI
-- Prompt Construction
-- Character Internal State
+- Relationship State mutation (owned by State Authority ⑤)
+- Character State mutation (owned by State Authority ⑤)
+- Dialogue (owned by Narrative Director / LLM Runtime)
+- Story Writing (owned by Narrative Director)
+- Images (owned by Image Pipeline)
+- UI (owned by Renderer)
+- Prompt Construction (owned by Prompt Builder)
 
 ---
 
 ## 6. Runtime Position（运行时定位）
 
-Relationship Engine is a core subsystem inside the Simulation Layer.
+Relationship Engine is a subsystem inside Simulation Authority (Layer ③). It is NOT an independent Authority layer.
+
+Relationship Engine 是 Simulation Authority（第③层）内部的子系统。它不是独立的权威层。
 
 ```mermaid
 flowchart TD
-    A[Player Action] --> B[Simulation Layer]
-    B --> C[Relationship Engine]
-    C --> D[Updated Relationship State]
-    D --> E[Behavior Tendency]
-    E --> F[Narrative Director]
+    A[Action Record] --> B[Simulation Authority ③]
+    B --> C[Relationship Engine<br/>subsystem]
+    C --> D[Relationship Deltas<br/>→ included in SimulationResult]
+    C --> E[Behavior Tendency<br/>→ consumed by Narrative Director]
+    C --> F[Relationship Constraints<br/>→ consumed by Narrative Director]
+    D --> G[State Authority ⑤<br/>applies mutations]
 ```
 
-Narrative Director consumes Relationship outputs but never modifies Relationship State directly.
+> **Computation vs Mutation:** Relationship Engine computes relationship deltas. These deltas are included in SimulationResult. State Authority (Layer ⑤) applies them to Persistent State. Relationship Engine never directly mutates Relationship State. See [Simulation Layer Blueprint §9.2](./Simulation_Layer_Blueprint.md) and [State Model §8](./Runtime_State_Model_Blueprint.md).
+
+Narrative Director consumes Relationship Engine outputs (Behavior Tendency, Relationship Constraints) but never modifies Relationship State directly.
 
 ---
 
@@ -337,7 +348,7 @@ Relationship Engine guarantees:
 | Replayable Evolution | 可重放演化 |
 | Persistent Consistency | 持久一致性 |
 
-No external module may modify Relationship State directly.
+No module may directly mutate Relationship State. Relationship Engine computes deltas; State Authority (Layer ⑤) applies them via Commit Pipeline. See [Artifact Ownership Matrix](./Runtime_Artifact_Ownership_Matrix.md).
 
 ---
 
@@ -372,18 +383,22 @@ Future features include:
 
 **Depends On:**
 
-- Simulation Layer Blueprint
-- Runtime Architecture
-- Overall Architecture
-- Glossary
+- [Runtime Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md) — defines Pipeline structure
+- [Simulation Layer Blueprint](./Simulation_Layer_Blueprint.md) — defines parent Authority and subsystem positioning
+- [Runtime State Model Blueprint](./Runtime_State_Model_Blueprint.md) — defines state mutation boundary
+- [Runtime Glossary](./Runtime_Glossary.md) — defines terminology
+- [Runtime Artifact Ownership Matrix](./Runtime_Artifact_Ownership_Matrix.md) — defines artifact ownership (Behavior Tendency / Constraints = Provisional)
+- [Relationship State Schema](../03_Data/Relationship_State_Schema.md) — defines state structure
+- Runtime Architecture Blueprint
+- Overall Architecture Blueprint
 
 **Referenced By:**
 
-- Narrative Director Blueprint
-- Character System Blueprint
-- Relationship State Schema
-- Scene Engine
-- Memory Architecture
+- [Simulation Layer Blueprint](./Simulation_Layer_Blueprint.md) — Relationship Engine as internal subsystem
+- [Narrative Director Blueprint](./Narrative_Director_Blueprint.md) — consumes Behavior Tendency / Constraints
+- [Scene Engine Blueprint](./Scene_Engine_Blueprint.md) — Relationship Engine within Scene transaction
+- [Memory Architecture Blueprint](./Memory_Architecture_Blueprint.md) — Memory reads Relationship State
+- [Relationship State Schema](../03_Data/Relationship_State_Schema.md) — Schema's parent Blueprint
 
 ---
 
@@ -391,6 +406,7 @@ Future features include:
 
 | Version | Date | Description |
 |----------|------------|-------------|
+| v2.4 | 2026-07-14 | **Phase B-2 sync update:** (1) Pipeline alignment — added Pipeline Blueprint reference, updated §6 flowchart to show Relationship Engine as subsystem of Simulation Authority (Layer ③), deltas flow into SimulationResult. (2) Authority boundary — clarified NOT an independent Authority layer, added Parent Blueprint. (3) State mutation boundary — corrected "Managing persistent Relationship State" to "Computing relationship deltas (State Authority manages mutation)". Corrected §15 "No external module may modify" to "No module may directly mutate; Relationship Engine computes deltas; State Authority applies them". (4) Artifact ownership — added Ownership Matrix reference, marked Behavior Tendency/Constraints as Provisional. (5) Cross references — added Pipeline, State Model, Glossary, Artifact Ownership Matrix to Depends On; expanded Referenced By. (6) Governance fields updated. |
 | v2.3 | 2026-07-13 | Documentation enhancement: bilingual headings, Mermaid flowcharts, tables, consistent terminology |
 | v2.2 | 2026-07-13 | Added Relationship Graph, Constraints, Runtime Model, Future Extensibility |
 | v2.1 | 2026-07-13 | Added Behavior Tendency and detailed dimensions |

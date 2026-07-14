@@ -566,13 +566,13 @@ Once this Schema is locked, the following governance rules apply:
 
 **Owner:** Simulation Architect
 
-**Reviewers:**
+**Architecture Reviewers:**
 
 - Runtime Architect
 - Engine Architect
 - Memory Architect
 
-**Approval:** Architecture Review Required
+**Architecture Approval:** Architecture Review Required
 
 **Update Policy:** Changes affecting immutability rules, Commit Boundary semantics, Delta structure, visibility model, or acyclic dependency invariants require ADR approval.
 

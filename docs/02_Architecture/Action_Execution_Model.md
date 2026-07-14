@@ -194,7 +194,7 @@ flowchart TD
 | cancellation_reason | 取消原因（如果被取消） | Set once at cancellation |
 | interruption_source | 中断来源（如果被中断） | Set once at interruption |
 
-> **action_id is Reference, Not Embed:** Action Record stores `action_id` — a UUID reference to the Action Object. It does not embed the Action Object itself. The Action Object is retrieved from the Runtime Log or Action Registry when needed. This ensures:
+> **action_id is Reference, Not Embed:** Action Record stores `action_id` — a UUID reference to the Action Object. It does not embed the Action Object itself. The Action Object is retrieved from the Runtime Log when needed. The Action Type Definition is retrieved from the Action Registry when needed. This ensures:
 > - Action Object's Immutability is guaranteed by Planner, not by Action Record.
 > - Action Record can be serialized independently of Action Object.
 > - Replay recreates Action Records, not Action Objects.
@@ -725,7 +725,7 @@ This document intentionally does **not** define the following:
 | Simulation rules and computation | Simulation Layer Blueprint |
 | Event structure and commit | Event Object Schema + Timeline Manager |
 | State mutation (Character/Relationship/World) | State Management Layer / Commit Pipeline |
-| Action Type definitions | Action Registry (RC1) |
+| Action Type definitions | Action Registry (RC2) |
 | Player Intent parsing | Future: Planner / Intent Parser |
 | Narrative planning | Narrative Director Blueprint |
 | Memory generation | Memory Architecture Blueprint |
@@ -745,7 +745,7 @@ This document intentionally does **not** define the following:
 - [Simulation Layer Blueprint](./Simulation_Layer_Blueprint.md)
 - [Runtime State Model Blueprint](./Runtime_State_Model_Blueprint.md)
 - [Glossary](../00_Project/Glossary.md)
-- [Action Registry v1.0 RC1](./Action_Registry.md)
+- [Action Registry v1.0 RC2](./Action_Registry.md)
 
 **Referenced By:**
 
@@ -775,13 +775,13 @@ This document intentionally does **not** define the following:
 
 **Owner:** Runtime Architect
 
-**Reviewers:**
+**Architecture Reviewers:**
 
 - Engine Architect
 - Simulation Architect
 - Narrative Architect
 
-**Approval:** Architecture Review Required
+**Architecture Approval:** Architecture Review Required
 
 **Update Policy:** Changes affecting Authority boundaries, Action Record structure, Lifecycle state machine, or Determinism rules require ADR approval.
 

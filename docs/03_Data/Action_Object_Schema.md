@@ -636,13 +636,13 @@ This Schema intentionally does **not** define the following:
 
 **Owner:** Runtime Architect
 
-**Reviewers:**
+**Architecture Reviewers:**
 
 - Engine Architect
 - Simulation Architect
 - Narrative Architect
 
-**Approval:** Architecture Review Required (for any change, including minor)
+**Architecture Approval:** Architecture Review Required (for any change, including minor)
 
 **Update Policy:** This Schema is Locked. Any change — including field additions, enum extensions, or documentation updates — requires ADR (Architecture Decision Record) approval. Changes affecting immutability rules, Field Admission Rule, Correlation Chain, Pure Input principle, Parameters opacity, or Non-Goals require ADR approval with full Architecture Review.
 

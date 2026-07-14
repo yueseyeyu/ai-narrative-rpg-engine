@@ -1,8 +1,8 @@
 # Runtime Architecture Overview
 
-**Version:** v1.0  
+**Version:** v1.1  
 **Status:** Active  
-**Last Updated:** 2026-07-13
+**Last Updated:** 2026-07-14
 
 ---
 
@@ -28,6 +28,22 @@ AI Narrative RPG Engine 不是一个文本生成系统，而是一个**拥有生
 | 记忆与历史 | Persistence & Memory System |
 
 文本和图片只是**表现层**，状态才是**事实层**。
+
+---
+
+## Core Runtime Principles（核心运行时原则）
+
+以下五项原则是 Runtime Architecture 的不可变基础：
+
+| Principle | Description |
+|-----------|-------------|
+| **Simulation computes** | 模拟计算。Simulation Authority (Layer ③) computes what happens — produces SimulationResult with deltas. |
+| **State mutates** | 状态变更。State Authority (Layer ⑤) is the sole authority for Persistent State mutation. |
+| **Scene Engine orchestrates** | 事务编排。Scene Engine is the Transaction Container and Pipeline Coordinator. NOT an Authority layer. |
+| **Generation expresses** | 生成表达。Narrative Director, LLM, and Image Pipeline produce expressions from committed facts. Post-Pipeline. Regenerable. |
+| **Memory extracts** | 记忆提取。Memory System extracts Memory Objects from committed Events and State. Never mutates Persistent State. |
+
+> **Architecture Baseline:** These principles are frozen in [Architecture Baseline v1.0](../00_Project/Architecture_Baseline.md). Any change requires ADR approval.
 
 ---
 
@@ -103,16 +119,18 @@ flowchart LR
 
 **Depends On:**
 
+- [Runtime Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md) — defines 5-Layer Authority Pipeline
+- [Runtime Architecture Blueprint](./Runtime_Architecture_Blueprint.md) — detailed specification
+- [Runtime Glossary](./Runtime_Glossary.md) — defines terminology
 - Overall Architecture Overview
-- Glossary
 
 **Referenced By:**
 
-- Scene Engine Blueprint
-- Simulation Layer Blueprint
-- Relationship Engine Blueprint
-- Memory Architecture Blueprint
-- Narrative Director Blueprint
+- [Scene Engine Blueprint](./Scene_Engine_Blueprint.md)
+- [Simulation Layer Blueprint](./Simulation_Layer_Blueprint.md)
+- [Relationship Engine Blueprint](./Relationship_Engine_Blueprint.md)
+- [Memory Architecture Blueprint](./Memory_Architecture_Blueprint.md)
+- [Narrative Director Blueprint](./Narrative_Director_Blueprint.md)
 
 ---
 
@@ -120,4 +138,5 @@ flowchart LR
 
 | Version | Date | Description |
 |---------|------|-------------|
+| v1.1 | 2026-07-14 | Phase B-2 sync: added Pipeline Blueprint and Glossary to Depends On; expanded Referenced By with links. Overview content references Pipeline-aligned Blueprint. |
 | v1.0 | 2026-07-13 | Created as Overview; detailed spec moved to Blueprint |

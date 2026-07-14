@@ -1,8 +1,10 @@
 # Runtime State Model Blueprint
 
-**Version:** v1.0  
+**Version:** v1.1  
 **Status:** Draft  
-**Last Updated:** 2026-07-13
+**Last Updated:** 2026-07-14
+
+**Depends On:** [Runtime Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md), [Runtime Infrastructure Blueprint](./Runtime_Infrastructure_Blueprint.md), [Simulation Layer Blueprint](./Simulation_Layer_Blueprint.md), [Runtime Glossary](./Runtime_Glossary.md)
 
 ---
 
@@ -28,9 +30,11 @@ Runtime State is fact. Generated content is expression.
 
 Runtime State 是事实，生成内容是表达。
 
-The Engine reads Runtime State to produce experiences, and writes back to Runtime State only through Simulation Layer.
+The Engine reads Runtime State to produce experiences, and writes back to Runtime State only through **State Authority (Layer ⑤)**. Simulation Authority (Layer ③) computes what should change (deltas); State Authority applies those changes.
 
-引擎读取 Runtime State 产生体验，仅通过 Simulation Layer 写回 Runtime State。
+引擎读取 Runtime State 产生体验，仅通过**状态权威（第⑤层）**写回 Runtime State。模拟权威（第③层）计算应该改变什么（delta）；状态权威应用这些改变。
+
+> **Pipeline Alignment:** Runtime State is owned by **State Authority — Layer ⑤** of the [5-Layer Authority Pipeline](./Runtime_Pipeline_Blueprint.md). Simulation Authority (Layer ③) computes deltas; State Authority (Layer ⑤) applies mutations. See [Simulation Layer Blueprint](./Simulation_Layer_Blueprint.md) for the computation contract.
 
 ---
 
@@ -58,15 +62,19 @@ The Engine reads Runtime State to produce experiences, and writes back to Runtim
 
 **Owner:** Runtime Architect
 
-**Reviewers:**
+**Architecture Reviewers:**
 
 - Engine Architect
 - Simulation Architect
 - Memory Architect
 
-**Approval:** Architecture Review Required
+**Architecture Approval:** Architecture Review Required
 
-**Update Policy:** Changes affecting state domain structure, ownership boundaries, or snapshot/branch semantics require ADR approval.
+**Last Reviewed:** 2026-07-14
+
+**Parent Blueprint:** [Runtime Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md)
+
+**Update Policy:** Changes affecting state domain structure, ownership boundaries, Pipeline alignment, or snapshot/branch semantics require ADR approval.
 
 ---
 
@@ -75,7 +83,7 @@ The Engine reads Runtime State to produce experiences, and writes back to Runtim
 | Principle | Description |
 |-----------|-------------|
 | State Is Fact | 状态是唯一事实来源。Runtime State is the single source of truth. |
-| Simulation Owns Mutation | 只有 Simulation Layer 可以变更 Runtime State。Only Simulation Layer may mutate Runtime State. |
+| State Owns Mutation | 只有 State Authority（第⑤层）可以变更 Persistent State。Only State Authority (Layer ⑤) may mutate Persistent State. Simulation Authority (Layer ③) computes deltas; State Authority applies them. |
 | Persistent vs Session Separation | 持久状态与会话状态严格分离。Persistent State survives across sessions; Session State is transient. |
 | Reference, Not Own | Runtime State 引用记忆，不拥有记忆数据库。Runtime State references memories, not owns the Memory database. |
 | Deterministic Snapshot | 相同状态 + 相同输入 = 相同输出。Identical state + identical input = identical output. |
@@ -235,11 +243,11 @@ This section explicitly defines which module owns each runtime domain and which 
 
 | State Domain | Owner (Read/Write) | Read-Only Access |
 |--------------|-------------------|-----------------|
-| Character State | Simulation Layer | Narrative Director, Prompt Builder, Memory System, LLM Runtime |
-| **Relationship State** | **Relationship Engine** (via Simulation Layer) | Narrative Director, Prompt Builder, Memory System |
-| World State | Simulation Layer | Narrative Director, Prompt Builder, Memory System |
-| Progression State | Simulation Layer | Narrative Director, Prompt Builder |
-| Timeline State | Simulation Layer | Narrative Director, Prompt Builder, Memory System |
+| Character State | State Management (State Authority ⑤) | Simulation Layer, Narrative Director, Prompt Builder, Memory System, LLM Runtime |
+| **Relationship State** | State Management (State Authority ⑤) | Simulation Layer, Narrative Director, Prompt Builder, Memory System |
+| World State | State Management (State Authority ⑤) | Simulation Layer, Narrative Director, Prompt Builder, Memory System |
+| Progression State | State Management (State Authority ⑤) | Simulation Layer, Narrative Director, Prompt Builder |
+| Timeline State | State Management (State Authority ⑤) | Simulation Layer, Narrative Director, Prompt Builder, Memory System |
 | Scene State | Scene Engine | Simulation Layer, Narrative Director |
 | Runtime Events | Simulation Layer | Narrative Director, Prompt Builder |
 | Active Memory References | Memory System | Narrative Director, Prompt Builder, Simulation Layer |
@@ -249,8 +257,8 @@ This section explicitly defines which module owns each runtime domain and which 
 
 | Rule | Description |
 |------|-------------|
-| Simulation Layer is the sole state mutation authority | 只有 Simulation Layer 可以变更 Persistent State。Only Simulation Layer may mutate Persistent State. |
-| Relationship Engine mutates Relationship State via Simulation Layer | Relationship Engine 通过 Simulation Layer 变更 Relationship State。 |
+| State Authority (Layer ⑤) is the sole mutation authority | 只有 State Authority 可以变更 Persistent State。Only State Authority may mutate Persistent State. Simulation Authority (Layer ③) computes deltas; State Authority applies them. |
+| Relationship Engine computes deltas via Simulation Layer | Relationship Engine 计算 Relationship delta，delta 包含在 SimulationResult 中，State Authority 应用变更。Relationship Engine computes relationship deltas; deltas are included in SimulationResult; State Authority applies them. |
 | Memory System manages Active Memory References | Memory System 负责激活和更新记忆引用，但不修改 Persistent State。 |
 | Scene Engine manages Scene State and Runtime Metadata | Scene Engine 管理场景执行状态和元数据，但不修改 Persistent State。 |
 | All other modules are read-only consumers | 所有其他模块只读消费 Runtime State。 |
@@ -330,7 +338,7 @@ LLM 不允许直接修改任何 Runtime State。
 
 Runtime State Model guarantees:
 
-- All Persistent State mutations go through Simulation Layer.
+- All Persistent State mutations go through State Authority (Layer ⑤). Simulation Authority (Layer ③) computes deltas; State Authority applies them.
 - Session State is discarded or committed at Scene completion.
 - Runtime State never owns Memory Objects — it only holds references.
 - Historical events are not stored in Runtime State — they belong to Memory System.
@@ -350,7 +358,7 @@ This Blueprint is the **parent blueprint** for all future schema documents.
 | Blueprint | Relationship |
 |-----------|-------------|
 | Runtime Architecture Blueprint | 定义 Runtime State 如何在运行时流转 |
-| Simulation Layer Blueprint | 定义谁可以变更 Runtime State |
+| [Simulation Layer Blueprint](./Simulation_Layer_Blueprint.md) | 定义计算什么变更（deltas）；State Authority 应用变更。Simulation computes deltas; State Authority applies mutations. |
 | Scene Engine Blueprint | 定义 Scene 事务如何保护 Runtime State |
 | Relationship Engine Blueprint | 定义 Relationship State 的演化规则 |
 | Memory Architecture Blueprint | 定义 Memory System 与 Runtime State 的引用关系 |
@@ -370,7 +378,7 @@ Future schema documents (Character Schema, Relationship Schema, World Schema, et
 |---------------|-------------|
 | In-memory State | Runtime State 应在内存中维护，避免频繁磁盘 I/O |
 | Snapshot Compression | 快照应支持压缩以减少内存占用 |
-| Branch Efficiency | 分支应使用 Copy-on-Write 语义，避免完整复制 |
+| Branch Efficiency | 分支 SHALL 使用高效复制语义避免完整状态复制。具体实现机制由 Runtime Infrastructure Blueprint 定义。Branches SHALL use efficient copy semantics to avoid full state duplication. Implementation mechanism is defined by Runtime Infrastructure Blueprint. |
 | Background Persistence | 持久化应在后台异步执行，不阻塞 Scene 执行 |
 
 ---
@@ -381,8 +389,8 @@ Ownership defines **who owns** a state domain. Mutation Rules define **who may m
 
 | Rule | Description |
 |------|-------------|
-| Simulation Layer is the sole mutation authority | 只有 Simulation Layer 可以变更 Persistent State。Only Simulation Layer may mutate Persistent State. |
-| Relationship Engine requests through Simulation Layer | Relationship Engine 通过 Simulation Layer 请求变更，不直接修改。 |
+| State Authority (Layer ⑤) is the sole mutation authority | 只有 State Authority 可以变更 Persistent State。Only State Authority may mutate Persistent State. Simulation Authority computes deltas; State Authority applies them. |
+| Relationship Engine computes deltas, State Authority applies | Relationship Engine 计算 Relationship delta，包含在 SimulationResult 中，State Authority 通过 Commit Pipeline 应用变更。Relationship Engine computes deltas; State Authority applies them via Commit Pipeline. |
 | Memory System mutates only Memory Domain | Memory System 只可变更 Memory 域（Active Memory References），不修改 Persistent State。 |
 | Narrative Director is read-only | Narrative Director 只读消费 Runtime State。 |
 | Prompt Builder is read-only | Prompt Builder 只读消费 Runtime State。 |
@@ -395,18 +403,22 @@ Ownership defines **who owns** a state domain. Mutation Rules define **who may m
 
 **Depends On:**
 
+- [Runtime Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md) — defines Pipeline stage ⑤
+- [Runtime Infrastructure Blueprint](./Runtime_Infrastructure_Blueprint.md) — defines snapshot, seed, log infrastructure
+- [Simulation Layer Blueprint](./Simulation_Layer_Blueprint.md) — defines upstream delta computation
+- [Runtime Glossary](./Runtime_Glossary.md) — defines terminology
 - Overall Architecture Blueprint
 - Runtime Architecture Blueprint
-- Glossary
 
 **Referenced By:**
 
-- Simulation Layer Blueprint
-- Scene Engine Blueprint
-- Relationship Engine Blueprint
-- Memory Architecture Blueprint
-- Narrative Director Blueprint
-- Prompt Builder Blueprint
+- [Simulation Layer Blueprint](./Simulation_Layer_Blueprint.md) — State Model as Simulation's downstream
+- [Scene Engine Blueprint](./Scene_Engine_Blueprint.md) — State Model as Scene's state foundation
+- [Relationship Engine Blueprint](./Relationship_Engine_Blueprint.md) — State Model as relationship state owner
+- [Memory Architecture Blueprint](./Memory_Architecture_Blueprint.md) — State Model as memory reference holder
+- [Narrative Director Blueprint](./Narrative_Director_Blueprint.md) — State Model as read-only consumer
+- [Prompt Builder Blueprint](./Prompt_Builder_Blueprint.md) — State Model as read-only consumer
+- [Runtime Artifact Ownership Matrix](./Runtime_Artifact_Ownership_Matrix.md) — State Model as ownership reference
 - Future Schema Documents (Character Schema, Relationship Schema, World Schema, etc.)
 
 ---
@@ -416,3 +428,4 @@ Ownership defines **who owns** a state domain. Mutation Rules define **who may m
 | Version | Date | Description |
 |---------|------|-------------|
 | v1.0 | 2026-07-13 | Initial Blueprint: Persistent/Session split, Active Memory References, Runtime Metadata, Branch/Fork semantics, Runtime Ownership matrix |
+| v1.1 | 2026-07-14 | **Phase B-1.1a sync update:** (1) Pipeline alignment — repositioned as Layer ⑤ State Authority, added Pipeline Blueprint reference. (2) Ownership correction — "Simulation Layer is the sole state mutation authority" corrected to "State Authority (Layer ⑤) is the sole mutation authority; Simulation Authority (Layer ③) computes deltas". Applied to §4 Design Principles, §8 Ownership Matrix, §11 Guarantees, §14 Mutation Rules. (3) De-implementation — removed Copy-on-Write implementation detail from §13 Hardware, replaced with requirement-level language. (4) Cross-references — added Pipeline, Infrastructure, Glossary, Simulation Layer Blueprint to Depends On; added bidirectional references; added Runtime Artifact Ownership Matrix to Referenced By. (5) Governance fields updated (Architecture Reviewers, Architecture Approval, Last Reviewed, Parent Blueprint). |

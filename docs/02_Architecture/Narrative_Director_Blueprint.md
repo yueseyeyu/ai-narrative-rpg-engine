@@ -1,8 +1,10 @@
 # Narrative Director Blueprint
 
-**Version:** v2.3  
+**Version:** v2.4  
 **Status:** Draft  
-**Last Updated:** 2026-07-13
+**Last Updated:** 2026-07-14
+
+**Depends On:** [Runtime Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md), [Simulation Layer Blueprint](./Simulation_Layer_Blueprint.md), [Runtime State Model Blueprint](./Runtime_State_Model_Blueprint.md), [Scene Engine Blueprint](./Scene_Engine_Blueprint.md), [Relationship Engine Blueprint](./Relationship_Engine_Blueprint.md), [Runtime Glossary](./Runtime_Glossary.md), [Runtime Artifact Ownership Matrix](./Runtime_Artifact_Ownership_Matrix.md)
 
 ---
 
@@ -68,13 +70,17 @@ Narrative determines how the player experiences what happened.
 
 **Owner:** Narrative Architect
 
-**Reviewers:**
+**Architecture Reviewers:**
 
 - Runtime Architect
 - Simulation Architect
 - Product Architect
 
-**Approval:** Architecture Review Required
+**Architecture Approval:** Architecture Review Required
+
+**Last Reviewed:** 2026-07-14
+
+**Parent Blueprint:** [Runtime Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md)
 
 **Update Policy:** Changes affecting narrative decision flow, planning logic, or module boundaries require ADR approval.
 
@@ -85,7 +91,7 @@ Narrative determines how the player experiences what happened.
 | Principle | Description |
 |-----------|-------------|
 | Story Follows State | 叙事永不改变现实。Narrative never changes reality. Simulation determines what happened; Narrative determines how the player experiences it. |
-| Simulation Before Narrative | Narrative Director 总是消费 Simulation Output，永不修改模拟结果。Narrative Director always consumes Simulation Output. It never modifies Simulation Results. |
+| Simulation Before Narrative | Narrative Director 总是消费 SimulationResult，永不修改模拟结果。Narrative Director always consumes SimulationResult. It never modifies Simulation Results or any Persistent State. |
 | Emotion Before Information | 叙事应优化情感体验，而非最大化信息传递。Narrative should optimize emotional experience rather than maximize information delivery. |
 | Relationship Driven | Relationship State 是叙事基调、节奏和场景选择的主要驱动。Relationship State is the primary driver of narrative tone, pacing, and scene selection. |
 | Player Agency Matters | 玩家选择通过 Simulation 影响未来叙事。Player choices influence future narrative through Simulation. Narrative never invalidates meaningful player decisions. |
@@ -107,30 +113,38 @@ Narrative Director is a Planning Layer.
 
 ### Does NOT Own（不拥有）
 
-- World Rules
-- State Transition
-- Relationship Calculation
-- Prompt Rendering
-- LLM Output
+- World Rules (owned by Simulation Authority)
+- State Transition / Mutation (owned by State Authority ⑤)
+- Relationship Calculation (owned by Relationship Engine subsystem)
+- Event Commit (owned by Timeline Manager ④)
+- Memory Extraction (owned by Memory System)
+- Prompt Rendering (owned by Prompt Builder)
+- LLM Output (owned by LLM Runtime)
+- Image Generation (owned by Image Pipeline)
 
 ---
 
 ## 6. Runtime Position（运行时定位）
 
+Narrative Director sits between deterministic simulation and probabilistic generation. It is a **post-Pipeline consumer** — it consumes committed Runtime State and SimulationResult, and produces Narrative Plans for generation.
+
+Narrative Director 位于确定性模拟和概率性生成之间。它是**流水线后消费方**——消费已提交的 Runtime State 和 SimulationResult，产出 Narrative Plan 供生成使用。
+
 ```mermaid
 flowchart TD
-    A[Player Action] --> B[Scene Engine]
-    B --> C[Simulation Layer]
-    C --> D[Relationship Engine]
-    D --> E[Narrative Director]
-    E --> F[Prompt Builder]
-    F --> G[LLM]
-    G --> H[Renderer]
+    PIPE[Pipeline ①→⑤] --> STATE[Committed Runtime State]
+    PIPE --> SR[SimulationResult]
+    STATE --> ND[Narrative Director]
+    SR --> ND
+    RE[Relationship Engine<br/>Behavior Tendency / Constraints] --> ND
+    ND --> NP[Narrative Plan]
+    NP --> PB[Prompt Builder]
+    NP --> IP[Image Pipeline]
 ```
 
-Narrative Director sits between deterministic simulation and probabilistic generation.
-
-Narrative Director 位于确定性模拟和概率性生成之间。
+> **Post-Pipeline:** Narrative Director does not participate in Authority decisions. It consumes committed facts (State, Events, SimulationResult) and produces expressions (Narrative Plans). Generation results are regenerable. See [Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md).
+>
+> **流水线后：** Narrative Director 不参与权威决策。它消费已提交的事实（State、Event、SimulationResult）并产出表达（Narrative Plan）。生成结果是可重新生成的。
 
 ---
 
@@ -143,7 +157,8 @@ The Director consumes the following data:
 | Scene Context | 当前地点、参与者、环境 |
 | Character State | 参与角色的健康、状态、物品 |
 | Relationship State | 好感、信任、活跃冲突 |
-| Behavior Tendency | 来自 Relationship Engine 的行为倾向（如 "Hostile", "Flirty"） |
+| SimulationResult | 刚刚计算的 SimulationResult（含 deltas、event candidates、status） |
+| Behavior Tendency | 来自 Relationship Engine 的行为倾向（Confidence: Provisional） |
 | Player Intent | 从最近玩家行为推导的意图（如 "Aggressive", "Inquisitive"） |
 | Player Experience Profile | 用户偏好（如偏好慢节奏恋爱、高战斗紧张感） |
 | Quest State | 当前活跃目标、关键路径标志 |
@@ -301,12 +316,13 @@ If Prompt Builder fails, LLM fails, or Image generation fails:
 
 Narrative Director guarantees:
 
-- Never modifies Simulation State
-- Never modifies Relationship State
+- Never modifies any Persistent State (State Authority ⑤ owns all mutations)
+- Never modifies SimulationResult (immutable, see [Simulation Layer §8](./Simulation_Layer_Blueprint.md))
 - Never bypasses Scene Engine
 - Never bypasses Prompt Builder
 - Produces deterministic Narrative Plans
-- Supports replay using identical runtime state
+- Supports replay using identical committed runtime state
+- Generation retry reuses the same committed state — SHALL NOT re-run Simulation
 
 ---
 
@@ -339,19 +355,21 @@ Future extensions include:
 
 **Depends On:**
 
-- Overall Architecture
-- Runtime Architecture
-- Scene Engine Blueprint
-- Simulation Layer Blueprint
-- Relationship Engine Blueprint
-- Glossary
+- [Runtime Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md) — defines Pipeline structure and post-Pipeline positioning
+- [Simulation Layer Blueprint](./Simulation_Layer_Blueprint.md) — defines SimulationResult (consumed)
+- [Runtime State Model Blueprint](./Runtime_State_Model_Blueprint.md) — defines state consumed (read-only)
+- [Scene Engine Blueprint](./Scene_Engine_Blueprint.md) — defines transaction context
+- [Relationship Engine Blueprint](./Relationship_Engine_Blueprint.md) — defines Behavior Tendency / Constraints (consumed)
+- [Runtime Glossary](./Runtime_Glossary.md) — defines terminology
+- [Runtime Artifact Ownership Matrix](./Runtime_Artifact_Ownership_Matrix.md) — defines artifact ownership (Narrative Plan = Provisional)
+- Overall Architecture Blueprint
+- Runtime Architecture Blueprint
 
 **Referenced By:**
 
-- Prompt Builder Blueprint
-- Prompt Templates
-- Scene Engine
-- Image Pipeline
+- [Prompt Builder Blueprint](./Prompt_Builder_Blueprint.md) — consumes Narrative Plan
+- [Scene Engine Blueprint](./Scene_Engine_Blueprint.md) — Scene triggers Narrative Director
+- Image Pipeline — consumes CG Request
 - Future Narrative Planner
 
 ---
@@ -360,6 +378,7 @@ Future extensions include:
 
 | Version | Date | Description |
 |----------|------------|----------------------------------------------|
+| v2.4 | 2026-07-14 | **Phase B-2 sync update:** (1) Pipeline alignment — added Pipeline reference, positioned as post-Pipeline consumer. Replaced old flowchart with Pipeline-aligned diagram showing committed State + SimulationResult as inputs. (2) State mutation boundary — updated §16 from "Never modifies Simulation State" to "Never modifies any Persistent State (State Authority ⑤ owns all mutations)". Added SimulationResult immutability reference. (3) Artifact ownership — added Ownership Matrix reference, marked Narrative Plan as Provisional. (4) Cross references — added Pipeline, State Model, Glossary, Artifact Ownership Matrix to Depends On; expanded Referenced By with links. (5) Governance fields updated. (6) Added generation retry rule (reuse committed state, never re-run Simulation). |
 | v2.3 | 2026-07-13 | Documentation enhancement: bilingual headings, Mermaid flowcharts, tables, consistent terminology |
 | v2.2 | 2026-07-13 | Strengthened narrative planning boundaries and runtime workflow |
 | v2.1 | 2026-07-13 | Added Relationship Influence and Content Profile adaptation |

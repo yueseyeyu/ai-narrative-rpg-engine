@@ -1,8 +1,10 @@
 # Overall Architecture Blueprint
 
-**Version:** v2.1  
+**Version:** v2.2  
 **Status:** Draft  
-**Last Updated:** 2026-07-13
+**Last Updated:** 2026-07-14
+
+**Depends On:** [Runtime Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md), [Runtime Infrastructure Blueprint](./Runtime_Infrastructure_Blueprint.md), [Runtime Architecture Blueprint](./Runtime_Architecture_Blueprint.md), [Runtime Glossary](./Runtime_Glossary.md), [Runtime Artifact Ownership Matrix](./Runtime_Artifact_Ownership_Matrix.md)
 
 ---
 
@@ -47,12 +49,14 @@ The Engine is not a chat application. It is a simulation-driven narrative RPG en
 
 **Owner:** Chief Architect
 
-**Reviewers:**
+**Architecture Reviewers:**
 
 - Product Architect
 - Engine Architect
 
-**Approval:** Architecture Review Required
+**Architecture Approval:** Architecture Review Required
+
+**Last Reviewed:** 2026-07-14
 
 **Update Policy:** Only update after ADR approval if architectural principles change.
 
@@ -108,19 +112,21 @@ flowchart TD
 
 ## 8. Runtime Architecture（运行时架构）
 
-描述一次完整 Scene 的生命周期（核心流程）。
+描述一次完整 Scene 的生命周期（对齐 5-Layer Authority Pipeline）：
 
 ```mermaid
 flowchart TD
-    A[Player Action] --> B[Scene Engine]
-    B --> C[Simulation Layer]
-    C --> D[Relationship Engine]
-    D --> E[Narrative Director]
-    E --> F[Prompt Builder]
-    F --> G[LLM / Image Model]
-    G --> H[Persistence]
-    H --> I[Next Scene]
+    PA[Player Action] --> INTENT[① Intent<br/>Planner]
+    INTENT --> EXEC[② Execution<br/>AEM]
+    EXEC --> SIM[③ Simulation<br/>Simulation Layer]
+    SIM --> REAL[④ Reality<br/>Timeline Manager]
+    REAL --> STATE[⑤ State<br/>State Management]
+    STATE --> GEN[Generation<br/>Narrative Director → LLM → Image]
+    GEN --> MEM[Memory Extraction]
+    MEM --> NEXT[Next Scene]
 ```
+
+> **Pipeline Alignment:** See [Runtime Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md). Simulation computes facts; State applies mutations; Generation expresses; Memory extracts.
 
 ---
 
@@ -214,7 +220,8 @@ flowchart LR
 ## 15. Runtime Guarantees（运行时保证）
 
 - Every Scene must update Relationship & Memory before Next Scene.
-- All long-term state changes must go through Simulation Layer.
+- All Persistent State changes must go through State Authority (Layer ⑤). Simulation Authority (Layer ③) computes deltas; State Authority applies them.
+- Generated content (narrative, images) is regenerable expression, not persistent fact.
 
 ---
 
@@ -238,19 +245,27 @@ General / Romance / Mature 等 Profile 共享同一套 Simulation、Narrative Di
 
 **Depends On:**
 
+- [Runtime Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md) — defines 5-Layer Authority Pipeline
+- [Runtime Infrastructure Blueprint](./Runtime_Infrastructure_Blueprint.md) — defines infrastructure platform
+- [Runtime Architecture Blueprint](./Runtime_Architecture_Blueprint.md) — defines runtime lifecycle
+- [Runtime Glossary](./Runtime_Glossary.md) — defines terminology
+- [Runtime Artifact Ownership Matrix](./Runtime_Artifact_Ownership_Matrix.md) — defines artifact ownership
 - Design Constitution
 - Project Vision
-- Glossary
 - PRD Blueprint
 
 **Referenced By:**
 
-- Simulation Layer
-- Narrative Director
+- [Simulation Layer Blueprint](./Simulation_Layer_Blueprint.md)
+- [Narrative Director Blueprint](./Narrative_Director_Blueprint.md)
+- [Scene Engine Blueprint](./Scene_Engine_Blueprint.md)
+- [Relationship Engine Blueprint](./Relationship_Engine_Blueprint.md)
+- [Memory Architecture Blueprint](./Memory_Architecture_Blueprint.md)
+- [LLM Runtime Blueprint](./LLM_Runtime_Blueprint.md)
+- [Prompt Builder Blueprint](./Prompt_Builder_Blueprint.md)
+- Image Pipeline
 - Character Schema
 - Relationship Schema
-- Scene Engine
-- Image Pipeline
 
 ---
 
@@ -258,5 +273,6 @@ General / Romance / Mature 等 Profile 共享同一套 Simulation、Narrative Di
 
 | Version | Date | Description |
 |---------|------|-------------|
+| v2.2 | 2026-07-14 | **Phase B-2 sync update:** (1) Pipeline alignment — added 5-Layer Authority Pipeline reference, replaced old runtime flowchart with Pipeline-aligned flow. (2) State mutation boundary — corrected "must go through Simulation Layer" to "must go through State Authority (Layer ⑤)". (3) Cross references — added Pipeline, Infrastructure, Runtime Architecture, Glossary, Artifact Ownership Matrix to Depends On; expanded Referenced By with links. (4) Governance fields updated. (5) Added regenerable expression clarification for generated content. |
 | v2.1 | 2026-07-13 | Documentation enhancement: bilingual headings, Mermaid flowcharts, tables, consistent terminology |
 | v2.0 | 2026-07-12 | 增加工程化元数据、Constraint Hierarchy、Quality Attributes、Runtime Guarantees、One Engine Principle |

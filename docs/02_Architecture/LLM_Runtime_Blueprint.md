@@ -1,8 +1,10 @@
 # LLM Runtime Blueprint
 
-**Version:** v1.2  
+**Version:** v1.3  
 **Status:** Draft  
-**Last Updated:** 2026-07-13
+**Last Updated:** 2026-07-14
+
+**Depends On:** [Runtime Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md), [Runtime Infrastructure Blueprint](./Runtime_Infrastructure_Blueprint.md), [Prompt Builder Blueprint](./Prompt_Builder_Blueprint.md), [Runtime Glossary](./Runtime_Glossary.md), [Runtime Artifact Ownership Matrix](./Runtime_Artifact_Ownership_Matrix.md)
 
 ---
 
@@ -84,13 +86,17 @@ The Runtime executes inference. It never decides gameplay.
 
 **Owner:** AI Runtime Architect
 
-**Reviewers:**
+**Architecture Reviewers:**
 
 - Runtime Architect
 - Prompt Architect
 - Infrastructure Architect
 
-**Approval:** Architecture Review Required
+**Architecture Approval:** Architecture Review Required
+
+**Last Reviewed:** 2026-07-14
+
+**Parent Blueprint:** [Runtime Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md)
 
 **Update Policy:** Changes affecting runtime interfaces, model abstraction, retry strategy, resource scheduling, or session lifecycle require ADR approval.
 
@@ -687,11 +693,14 @@ Future Runtime versions may automatically choose models based on Task Complexity
 
 **Depends On:**
 
-- Overall Architecture
+- [Runtime Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md) — defines Pipeline (LLM is post-Pipeline generation)
+- [Runtime Infrastructure Blueprint](./Runtime_Infrastructure_Blueprint.md) — defines platform services
+- [Prompt Builder Blueprint](./Prompt_Builder_Blueprint.md) — provides Prompt Package input
+- [Runtime Glossary](./Runtime_Glossary.md) — defines terminology
+- [Runtime Artifact Ownership Matrix](./Runtime_Artifact_Ownership_Matrix.md) — defines artifact ownership (LLM Output = Provisional)
+- Overall Architecture Blueprint
 - Runtime Architecture Blueprint
-- Prompt Builder Blueprint
 - Narrative Director Blueprint
-- Glossary
 
 **Referenced By:**
 
@@ -706,6 +715,7 @@ Future Runtime versions may automatically choose models based on Task Complexity
 
 | Version | Date | Description |
 |----------|------------|--------------------------------------------------------------|
+| v1.3 | 2026-07-14 | **Phase B-2 sync update:** Added Pipeline Blueprint, Infrastructure, Glossary, Artifact Ownership Matrix to Depends On. Updated Governance fields. LLM Runtime is post-Pipeline generation — produces expression, not facts. |
 | v1.2 | 2026-07-13 | Documentation enhancement: bilingual headings, Mermaid flowcharts, tables, consistent terminology |
 | v1.1 | 2026-07-13 | Added Runtime Scheduler, Capability Discovery, Side-Effect Free Inference, Sanity Check, Runtime Observability, unified Model Interface, enhanced resource management and validation pipeline |
 | v1.0 | 2026-07-13 | Initial Engineering Blueprint |

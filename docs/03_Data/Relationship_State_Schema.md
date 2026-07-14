@@ -576,13 +576,13 @@ Once this Schema is locked, the following governance rules apply:
 
 **Owner:** Relationship Architect
 
-**Reviewers:**
+**Architecture Reviewers:**
 
 - Runtime Architect
 - Simulation Architect
 - Narrative Architect
 
-**Approval:** Architecture Review Required
+**Architecture Approval:** Architecture Review Required
 
 **Update Policy:** Changes affecting domain structure, ownership boundaries, Profile/State separation, or Lifecycle states require ADR approval.
 

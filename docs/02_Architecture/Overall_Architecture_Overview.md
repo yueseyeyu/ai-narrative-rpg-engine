@@ -1,8 +1,8 @@
 # Overall Architecture Overview
 
-**Version:** v1.0  
+**Version:** v1.1  
 **Status:** Active  
-**Last Updated:** 2026-07-13
+**Last Updated:** 2026-07-14
 
 ---
 
@@ -23,7 +23,7 @@
 - 模拟产生事实，生成只负责表达
 - 关系是核心驱动
 - Scene 是最小运行单位
-- Python 管逻辑，LLM 管表达
+- Simulation computes, Generation expresses
 
 ---
 
@@ -96,9 +96,11 @@ General / Romance / Mature 等 Profile 共享同一套 Runtime。禁止 Fork Eng
 
 **Depends On:**
 
+- [Runtime Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md) — defines 5-Layer Authority Pipeline
+- [Overall Architecture Blueprint](./Overall_Architecture_Blueprint.md) — detailed specification
+- [Runtime Glossary](./Runtime_Glossary.md) — defines terminology
 - Design Constitution
 - Project Vision
-- Glossary
 
 **Referenced By:**
 
@@ -112,4 +114,5 @@ General / Romance / Mature 等 Profile 共享同一套 Runtime。禁止 Fork Eng
 
 | Version | Date | Description |
 |---------|------|-------------|
+| v1.1 | 2026-07-14 | Phase B-2 sync: added Pipeline Blueprint and Glossary to Depends On. Overview content references Pipeline-aligned Blueprint. |
 | v1.0 | 2026-07-13 | Created as Overview; detailed spec moved to Blueprint |

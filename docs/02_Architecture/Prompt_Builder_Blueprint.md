@@ -1,8 +1,10 @@
 # Prompt Builder Blueprint
 
-**Version:** v2.1  
+**Version:** v2.2  
 **Status:** Draft  
-**Last Updated:** 2026-07-13
+**Last Updated:** 2026-07-14
+
+**Depends On:** [Runtime Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md), [Narrative Director Blueprint](./Narrative_Director_Blueprint.md), [Memory Architecture Blueprint](./Memory_Architecture_Blueprint.md), [Runtime Glossary](./Runtime_Glossary.md), [Runtime Artifact Ownership Matrix](./Runtime_Artifact_Ownership_Matrix.md)
 
 ---
 
@@ -72,13 +74,17 @@ It never creates facts. It only describes facts.
 
 **Owner:** AI Runtime Architect
 
-**Reviewers:**
+**Architecture Reviewers:**
 
 - Runtime Architect
 - Narrative Architect
 - AI Infrastructure Architect
 
-**Approval:** Architecture Review Required
+**Architecture Approval:** Architecture Review Required
+
+**Last Reviewed:** 2026-07-14
+
+**Parent Blueprint:** [Runtime Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md)
 
 **Update Policy:** Changes affecting Prompt Package structure, Builder interfaces, or Runtime workflow require ADR approval.
 
@@ -365,17 +371,20 @@ These features must not violate the core principle: Prompt Builder remains a pur
 
 **Depends On:**
 
-- Overall Architecture
-- Runtime Architecture
-- Narrative Director Blueprint
+- [Runtime Pipeline Blueprint](./Runtime_Pipeline_Blueprint.md) — defines Pipeline (Prompt Builder is post-Pipeline generation)
+- [Narrative Director Blueprint](./Narrative_Director_Blueprint.md) — provides Narrative Plan input
+- [Memory Architecture Blueprint](./Memory_Architecture_Blueprint.md) — provides retrieved memories
+- [Runtime Glossary](./Runtime_Glossary.md) — defines terminology
+- [Runtime Artifact Ownership Matrix](./Runtime_Artifact_Ownership_Matrix.md) — defines artifact ownership (Prompt Package = Provisional)
+- Overall Architecture Blueprint
+- Runtime Architecture Blueprint
 - Relationship Engine Blueprint
-- Glossary
 
 **Referenced By:**
 
+- [LLM Runtime Blueprint](./LLM_Runtime_Blueprint.md) — consumes Prompt Package
 - Renderer Specification
 - Prompt Templates
-- LLM Runtime
 - Image Pipeline
 - Content Profile Specification
 
@@ -385,6 +394,7 @@ These features must not violate the core principle: Prompt Builder remains a pur
 
 | Version | Date | Description |
 |----------|------------|------------------------------------------------|
+| v2.2 | 2026-07-14 | **Phase B-2 sync update:** Added Pipeline Blueprint, Memory Architecture, Glossary, Artifact Ownership Matrix to Depends On. Updated Governance fields. Prompt Builder is post-Pipeline generation — translates facts to expressions. |
 | v2.1 | 2026-07-13 | Documentation enhancement: bilingual headings, Mermaid flowcharts, tables, consistent terminology |
 | v2.0 | 2026-07-13 | Unified architecture with Prompt Package, Prompt Philosophy, Multi-modal Pipeline, Sanitization, and deterministic transformation model |
 | v1.0 | 2026-07-13 | Initial Blueprint |

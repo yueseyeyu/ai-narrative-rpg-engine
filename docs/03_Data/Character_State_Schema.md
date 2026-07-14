@@ -61,13 +61,13 @@ Characters should maintain personality consistency, continuous growth, persisten
 
 **Owner:** Runtime Architect
 
-**Reviewers:**
+**Architecture Reviewers:**
 
 - Engine Architect
 - Simulation Architect
 - Narrative Architect
 
-**Approval:** Architecture Review Required
+**Architecture Approval:** Architecture Review Required
 
 **Update Policy:** Changes affecting domain structure, ownership boundaries, Profile/State separation, or Lifecycle states require ADR approval.
 

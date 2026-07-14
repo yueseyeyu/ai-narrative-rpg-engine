@@ -1,10 +1,10 @@
 # SimulationResult Schema
 
-**Version:** v1.0 Draft  
+**Version:** v1.1 Draft  
 **Status:** Draft  
-**Last Updated:** 2026-07-13
+**Last Updated:** 2026-07-14
 
-**Depends On:** [Event Object Schema v1.0 RC4](./Event_Object_Schema.md), [Character State Schema v1.3](./Character_State_Schema.md), [Relationship State Schema v1.0 RC3](./Relationship_State_Schema.md)
+**Depends On:** [Event Object Schema v1.0 RC4](./Event_Object_Schema.md), [Character State Schema v1.3](./Character_State_Schema.md), [Relationship State Schema v1.0 RC3](./Relationship_State_Schema.md), [Runtime Pipeline Blueprint](../02_Architecture/Runtime_Pipeline_Blueprint.md), [Simulation Layer Blueprint](../02_Architecture/Simulation_Layer_Blueprint.md), [Runtime Glossary](../02_Architecture/Runtime_Glossary.md), [Runtime Artifact Ownership Matrix](../02_Architecture/Runtime_Artifact_Ownership_Matrix.md)
 
 ---
 
@@ -719,6 +719,7 @@ Once this Schema is locked, the following governance rules apply:
 
 | Version | Date | Description |
 |---------|------|-------------|
+| v1.1 Draft | 2026-07-14 | **Phase B-2 sync update:** Added Pipeline Blueprint, Glossary, Artifact Ownership Matrix to Depends On. Updated Governance fields (Architecture Reviewers, Architecture Approval, Last Reviewed). Schema content already Pipeline-aligned (SimulationResult = computation, not mutation). |
 | v1.0 Draft | 2026-07-13 | Initial Schema: Identity, Status (5 states), Deltas, Generated Events, Validation Result, Failure Info, Diagnostics, Commit Pipeline, Lifecycle, Runtime Guarantees (Replay/Prediction/Debug), Acyclic Dependency, Commit Scope |
 
 ---
@@ -731,13 +732,15 @@ Once this Schema is locked, the following governance rules apply:
 
 **Owner:** Simulation Architect
 
-**Reviewers:**
+**Architecture Reviewers:**
 
 - Runtime Architect
 - Engine Architect
 - Narrative Architect
 
-**Approval:** Architecture Review Required
+**Architecture Approval:** Architecture Review Required
+
+**Last Reviewed:** 2026-07-14
 
 **Update Policy:** Changes affecting status model, Delta structure, commit pipeline semantics, or acyclic dependency invariants require ADR approval.
 
